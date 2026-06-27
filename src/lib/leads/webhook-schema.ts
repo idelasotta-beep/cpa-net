@@ -3,66 +3,73 @@ import { z } from "zod";
 /**
  * Schema del payload del webhook `order.created` de EstrategiasIA.
  *
- * Estructura inferida del payload real capturado (ver memoria del proyecto).
- * Es tolerante: solo exige lo imprescindible para crear un lead; el resto es
- * opcional. Si al ver el raw body real difieren las claves, ajustar aquí.
+ * Estructura confirmada contra el payload real (2026-06-27).
+ * IMPORTANTE: EstrategiasIA envía `null` (no ausencia) en los campos vacíos,
+ * por eso los opcionales usan `.nullish()` (acepta string | null | undefined).
  */
 
-// Acepta string o número y normaliza a string (ej. dropi_product_id "56579" / 56579).
+// String opcional tolerante a null.
+const optStr = z.string().nullish();
+
+// Número opcional tolerante a null (no coacciona null a 0 gracias a nullish).
+const optNum = z.coerce.number().nullish();
+
+// Acepta string | number | null | undefined y normaliza a string | null
+// (ej. dropi_product_id "56579" / 56579 / null).
 const idLike = z
   .union([z.string(), z.number()])
-  .transform((v) => String(v).trim())
-  .optional();
+  .nullish()
+  .transform((v) => (v === undefined || v === null ? null : String(v).trim()));
 
 const itemSchema = z.object({
-  product_name: z.string().optional(),
-  variant_name: z.string().optional(),
-  quantity: z.coerce.number().optional(),
-  unit_price: z.coerce.number().optional(),
-  total_price: z.coerce.number().optional(),
+  product_name: optStr,
+  variant_name: optStr,
+  quantity: optNum,
+  unit_price: optNum,
+  total_price: optNum,
   dropi_product_id: idLike,
   dropi_variation_id: idLike,
 });
 
 const customerSchema = z.object({
   name: z.string().min(1),
-  surname: z.string().optional().default(""),
+  surname: optStr,
   phone: z.string().min(1),
-  phone2: z.string().optional(),
-  phone3: z.string().optional(),
-  email: z.string().optional(),
-  dni: z.string().optional(),
+  phone2: optStr,
+  phone3: optStr,
+  email: optStr,
+  dni: optStr,
 });
 
 const orderSchema = z.object({
   number: z.coerce.string().min(1),
-  created_at: z.string().optional(),
+  created_at: optStr,
   created_via: z.string().min(1),
-  currency: z.string().optional(),
-  status: z.string().optional(),
-  payment_method: z.string().optional(),
-  total: z.coerce.number().optional(),
-  subtotal: z.coerce.number().optional(),
-  discount: z.coerce.number().optional(),
-  shipping_cost: z.coerce.number().optional(),
-  utm_source: z.string().optional(),
-  utm_medium: z.string().optional(),
-  utm_campaign: z.string().optional(),
-  utm_content: z.string().optional(),
-  utm_term: z.string().optional(),
+  currency: optStr,
+  status: optStr,
+  payment_method: optStr,
+  total: optNum,
+  subtotal: optNum,
+  discount: optNum,
+  shipping_cost: optNum,
+  utm_source: optStr,
+  utm_medium: optStr,
+  utm_campaign: optStr,
+  utm_content: optStr,
+  utm_term: optStr,
   customer: customerSchema,
-  shipping_address: z.string().optional(),
-  shipping_city: z.string().optional(),
-  shipping_state: z.string().optional(),
-  shipping_neighborhood: z.string().optional(),
-  shipping_zip_code: z.string().optional(),
-  shipping_notes: z.string().optional(),
+  shipping_address: optStr,
+  shipping_city: optStr,
+  shipping_state: optStr,
+  shipping_neighborhood: optStr,
+  shipping_zip_code: optStr,
+  shipping_notes: optStr,
   items: z.array(itemSchema).optional().default([]),
 });
 
 const storeSchema = z.object({
-  slug: z.string().optional(),
-  name: z.string().optional(),
+  slug: optStr,
+  name: optStr,
   country: z.string().min(1), // ISO 2 letras
 });
 

@@ -76,6 +76,30 @@ describe("mapWebhookPayload", () => {
     expect(m.platformProductId).toBeNull();
   });
 
+  it("tolera null en campos opcionales (EstrategiasIA envía null, no ausencia)", () => {
+    const withNulls = {
+      ...base,
+      order: {
+        ...base.order,
+        utm_campaign: null,
+        customer: { ...base.order.customer, dni: null, surname: null },
+        items: [
+          {
+            product_name: "Fresh Deos Natural",
+            variant_name: null,
+            quantity: 1,
+            dropi_product_id: "56579",
+            dropi_variation_id: null,
+          },
+        ],
+      },
+    };
+    const m = mapWebhookPayload(parse(withNulls));
+    expect(m.platformProductId).toBe("56579");
+    expect(m.customerName).toBe("Test 5"); // surname null -> solo el nombre
+    expect(m.utmCampaign).toBeNull();
+  });
+
   it("coacciona dropi_product_id numérico a string", () => {
     const m = mapWebhookPayload(
       parse({
