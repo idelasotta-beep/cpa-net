@@ -42,6 +42,8 @@ export async function POST(req: Request): Promise<Response> {
           country: o.country,
           payoutUsd: o.payoutUsd,
           priceLocal: o.priceLocal,
+          // Convención del usuario: el dropi_product_id en EstrategiasIA = offer_id Adcombo.
+          platformProductId: o.networkOfferId,
         },
         create: {
           networkId: network.id,
@@ -50,6 +52,7 @@ export async function POST(req: Request): Promise<Response> {
           country: o.country,
           payoutUsd: o.payoutUsd,
           priceLocal: o.priceLocal,
+          platformProductId: o.networkOfferId,
         },
       });
       upserted++;
