@@ -129,8 +129,8 @@ export default async function LeadsPage({
         </Link>
       </form>
 
-      <div className="rounded-lg border">
-        <Table>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>

@@ -36,8 +36,8 @@ export default async function OffersPage({
           Sin ofertas con leads en el período
         </p>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border">
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Oferta</TableHead>

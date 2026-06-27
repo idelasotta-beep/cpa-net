@@ -55,8 +55,8 @@ export default async function CostsPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-lg border">
-        <Table>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="min-w-[640px]">
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>

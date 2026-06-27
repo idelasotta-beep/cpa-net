@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { type LoginState, loginAction } from "./actions";
 
 const initial: LoginState = {};
@@ -19,7 +20,8 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, initial);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <ThemeToggle className="absolute right-4 top-4" />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>CPA Net</CardTitle>
