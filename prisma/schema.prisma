@@ -1,0 +1,145 @@
+// Modelo de datos — Dashboard CPA multi-red (Fase 1).
+// Diseño multi-red: una oferta pertenece a una `Network` (Adcombo y futuras).
+// Los adapters por red se implementan en Fase 2.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Origen del pedido (viene en order.created_via del webhook de EstrategiasIA).
+enum LeadSource {
+  shopify
+  whatsapp_ai
+}
+
+// Status canónico unificado del lead (cada red traduce su vocabulario a este enum).
+enum LeadStatus {
+  pending // recién ingerido, aún no enviado a la red
+  sent_to_network // enviado a la red CPA, esperando confirmación
+  hold // llegó al call center, esperando contacto
+  lead // venta confirmada (aprobado) — genera payout
+  reject // venta no concretada
+  trash // datos basura (no cuenta para approval rate)
+  failed // falló el envío a la red tras varios intentos
+}
+
+// Quién originó un cambio de status (para auditoría).
+enum StatusChangeSource {
+  postback
+  polling
+  manual
+  system
+}
+
+model Network {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique // ej. "adcombo"
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  offers Offer[]
+
+  @@map("networks")
+}
+
+model Offer {
+  id        String  @id @default(uuid()) @db.Uuid
+  networkId String  @map("network_id") @db.Uuid
+  network   Network @relation(fields: [networkId], references: [id])
+
+  networkOfferId String @map("network_offer_id") // ID de la oferta en la red CPA
+  name           String
+  country        String // ISO 2 letras
+  priceLocal     Decimal @map("price_local") @db.Decimal(12, 2) // precio que paga el cliente (moneda local)
+  payoutUsd      Decimal @map("payout_usd") @db.Decimal(10, 2) // comisión al afiliado (siempre USD)
+
+  // Clave de mapeo del producto entrante -> esta oferta.
+  // Valor proviene de items[].dropi_product_id del webhook (nombre neutro, sin acoplar a Dropi).
+  platformProductId String? @map("platform_product_id")
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  leads      Lead[]
+  dailyCosts DailyCost[]
+
+  @@unique([networkId, networkOfferId])
+  @@index([platformProductId])
+  @@map("offers")
+}
+
+model Lead {
+  id String @id @default(uuid()) @db.Uuid
+
+  externalId String     @map("external_id") // = order.number de EstrategiasIA
+  source     LeadSource
+  offerId    String?    @map("offer_id") @db.Uuid // nullable hasta resolver el mapeo de producto
+  offer      Offer?     @relation(fields: [offerId], references: [id])
+
+  networkLeadId String?    @map("network_lead_id") // ID que devuelve la red al crear el lead
+  status        LeadStatus @default(pending)
+
+  customerName    String  @map("customer_name")
+  customerPhone   String  @map("customer_phone")
+  customerCity    String? @map("customer_city")
+  customerRegion  String? @map("customer_region")
+  customerCountry String  @map("customer_country")
+
+  clickId     String? @map("click_id") // sin uso actual (EstrategiasIA no lo provee)
+  utmSource   String? @map("utm_source")
+  utmCampaign String? @map("utm_campaign")
+  utmContent  String? @map("utm_content")
+  utmTerm     String? @map("utm_term")
+
+  rawPayload    Json   @map("raw_payload") // payload original sin modificar (forensics)
+  pushAttempts  Int    @default(0) @map("push_attempts")
+  lastPushError String? @map("last_push_error")
+
+  createdAt          DateTime  @default(now()) @map("created_at")
+  sentToNetworkAt    DateTime? @map("sent_to_network_at")
+  lastStatusChangeAt DateTime  @default(now()) @map("last_status_change_at")
+
+  statusHistory LeadStatusHistory[]
+
+  @@unique([externalId, source]) // idempotencia ante reintentos del webhook
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
+  @@index([offerId])
+  @@index([customerCity])
+  @@map("leads")
+}
+
+model LeadStatusHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  leadId    String   @map("lead_id") @db.Uuid
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  oldStatus LeadStatus? @map("old_status")
+  newStatus LeadStatus  @map("new_status")
+  changedAt DateTime @default(now()) @map("changed_at")
+  source    StatusChangeSource
+  note      String?
+
+  @@index([leadId])
+  @@map("lead_status_history")
+}
+
+model DailyCost {
+  id        String   @id @default(uuid()) @db.Uuid
+  offerId   String   @map("offer_id") @db.Uuid
+  offer     Offer    @relation(fields: [offerId], references: [id])
+  date      DateTime @db.Date
+  amountUsd Decimal  @map("amount_usd") @db.Decimal(10, 2)
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([offerId, date])
+  @@map("daily_costs")
+}
