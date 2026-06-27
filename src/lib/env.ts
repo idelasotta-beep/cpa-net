@@ -38,6 +38,11 @@ const envSchema = z.object({
   // Máximo de intentos de push a la red antes de marcar el lead como failed.
   MAX_PUSH_ATTEMPTS: z.coerce.number().int().positive().default(5),
 
+  // ── Dashboard auth (Fase 3) ──
+  DASHBOARD_USER_EMAIL: z.string().optional().default(""),
+  DASHBOARD_USER_PASSWORD_HASH: z.string().optional().default(""), // bcrypt
+  SESSION_SECRET: z.string().optional().default(""), // firma del JWT de sesión
+
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
     .default("info"),

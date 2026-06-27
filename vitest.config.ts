@@ -12,6 +12,7 @@ export default defineConfig({
       PLATFORM_WEBHOOK_SECRET: "test-secret",
       ADCOMBO_API_KEY: "test-adcombo-key",
       CRON_SECRET: "test-cron-secret",
+      SESSION_SECRET: "test-session-secret",
       LOG_LEVEL: "silent",
     },
   },
