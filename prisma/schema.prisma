@@ -98,8 +98,9 @@ model Lead {
   utmContent  String? @map("utm_content")
   utmTerm     String? @map("utm_term")
 
-  rawPayload    Json   @map("raw_payload") // payload original sin modificar (forensics)
-  pushAttempts  Int    @default(0) @map("push_attempts")
+  rawPayload    Json    @map("raw_payload") // payload original sin modificar (forensics)
+  revenueUsd    Decimal? @map("revenue_usd") @db.Decimal(10, 2) // revenue real que reporta la red al confirmar
+  pushAttempts  Int     @default(0) @map("push_attempts")
   lastPushError String? @map("last_push_error")
 
   createdAt          DateTime  @default(now()) @map("created_at")

@@ -18,6 +18,26 @@ const envSchema = z.object({
   // Opcional: si está vacío, la verificación se omite (solo para dev local).
   PLATFORM_WEBHOOK_SECRET: z.string().optional().default(""),
 
+  // ── Adcombo (Fase 2) ──
+  ADCOMBO_API_KEY: z.string().optional().default(""),
+  ADCOMBO_API_BASE_URL: z
+    .string()
+    .url()
+    .default("https://api.adcombo.com/api/v2"),
+  ADCOMBO_OFFER_INFO_URL: z
+    .string()
+    .url()
+    .default("https://api.adcombo.com/offer/info/"),
+  // Params opcionales del create (base_url conviene consultarlo con el AM).
+  ADCOMBO_DEFAULT_BASE_URL: z.string().optional().default(""),
+  ADCOMBO_DEFAULT_REFERRER: z.string().optional().default(""),
+
+  // Auth de los endpoints de jobs/admin (Bearer). Railway no lo inyecta solo.
+  CRON_SECRET: z.string().optional().default(""),
+
+  // Máximo de intentos de push a la red antes de marcar el lead como failed.
+  MAX_PUSH_ATTEMPTS: z.coerce.number().int().positive().default(5),
+
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
     .default("info"),

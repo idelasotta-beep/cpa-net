@@ -10,6 +10,8 @@ export default defineConfig({
       NODE_ENV: "test",
       DATABASE_URL: "postgresql://test:test@localhost:5432/test",
       PLATFORM_WEBHOOK_SECRET: "test-secret",
+      ADCOMBO_API_KEY: "test-adcombo-key",
+      CRON_SECRET: "test-cron-secret",
       LOG_LEVEL: "silent",
     },
   },
