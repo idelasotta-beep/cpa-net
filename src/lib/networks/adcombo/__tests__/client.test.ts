@@ -6,6 +6,9 @@ const lead = {
   id: "lead-uuid-123",
   customerName: "Juan Perez",
   customerPhone: "+56990001111",
+  customerAddress: "Av Siempre Viva 742",
+  customerCity: "Santiago",
+  customerRegion: "RM",
   source: "shopify",
   utmSource: "fb",
   utmCampaign: "camp1",
@@ -52,6 +55,8 @@ describe("adcomboClient.createOrder", () => {
     expect(url).toContain(`subacc=${lead.id}`);
     expect(url).toContain(`ext_in_id=${lead.id}`);
     expect(url).toMatch(/[?&]ip=\d+\.\d+\.\d+\.\d+/);
+    // address combina dirección + ciudad + región
+    expect(new URL(url).searchParams.get("address")).toBe("Av Siempre Viva 742, Santiago, RM");
   });
 
   it("marca is_double cuando Adcombo lo reporta", async () => {

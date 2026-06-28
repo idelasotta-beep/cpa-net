@@ -60,7 +60,12 @@ export const adcomboClient: OfferNetworkClient = {
         subacc: lead.id, // clave de reconciliación
         subacc4: lead.source,
       });
-      if (lead.customerAddress) params.set("address", lead.customerAddress);
+      // Adcombo tiene un solo param `address`: combinamos dirección + ciudad + región.
+      const fullAddress = [lead.customerAddress, lead.customerCity, lead.customerRegion]
+        .map((s) => s?.trim())
+        .filter(Boolean)
+        .join(", ");
+      if (fullAddress) params.set("address", fullAddress);
       if (lead.utmCampaign) params.set("subacc2", lead.utmCampaign);
       if (lead.utmContent) params.set("subacc3", lead.utmContent);
       if (lead.utmSource) params.set("utm_source", lead.utmSource);
