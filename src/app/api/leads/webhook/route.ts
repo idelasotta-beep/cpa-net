@@ -131,7 +131,7 @@ export async function POST(req: Request): Promise<Response> {
           utmCampaign: mapped.utmCampaign,
           utmContent: mapped.utmContent,
           utmTerm: mapped.utmTerm,
-          rawPayload: payload as unknown as Prisma.InputJsonValue,
+          rawPayload: json as Prisma.InputJsonValue, // JSON original sin recortar (forensics)
           statusHistory: {
             create: {
               newStatus: "pending",
