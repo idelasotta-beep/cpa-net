@@ -33,6 +33,7 @@ export const STATUS_BADGE_CLASS: Record<LeadStatus, string> = {
 export const SOURCE_LABEL: Record<LeadSource, string> = {
   shopify: "Shopify",
   whatsapp_ai: "WhatsApp",
+  manual: "Manual",
 };
 
 export const ORDERED_STATUSES: LeadStatus[] = [

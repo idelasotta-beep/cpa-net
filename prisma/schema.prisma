@@ -14,6 +14,7 @@ datasource db {
 enum LeadSource {
   shopify
   whatsapp_ai
+  manual // creado a mano desde el dashboard
 }
 
 // Status canónico unificado del lead (cada red traduce su vocabulario a este enum).

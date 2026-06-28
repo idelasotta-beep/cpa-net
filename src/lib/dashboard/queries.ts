@@ -310,6 +310,21 @@ export async function getCosts() {
   });
 }
 
+/** Ofertas activas (todas las redes) para el select de creación manual de lead. */
+export async function getActiveOffers() {
+  return prisma.offer.findMany({
+    where: { active: true },
+    select: {
+      id: true,
+      name: true,
+      country: true,
+      networkOfferId: true,
+      network: { select: { name: true, slug: true } },
+    },
+    orderBy: [{ network: { name: "asc" } }, { country: "asc" }, { name: "asc" }],
+  });
+}
+
 /** Ofertas que aparecen en leads (para selects de filtros y costos). */
 export async function getOffersWithLeads() {
   const grouped = await prisma.lead.groupBy({

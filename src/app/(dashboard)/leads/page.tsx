@@ -1,6 +1,7 @@
 import type { LeadSource, LeadStatus } from "@prisma/client";
 import Link from "next/link";
 import { LeadDrawer, type LeadDetailDTO } from "@/components/lead-drawer";
+import { ManualLeadDialog } from "@/components/manual-lead-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import {
   Table,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { formatSantiago } from "@/lib/dashboard/dates";
 import {
+  getActiveOffers,
   getLeadDetail,
   getLeadsPage,
   getOffersWithLeads,
@@ -74,7 +76,7 @@ export default async function LeadsPage({
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? "1") || 1);
 
-  const [result, offers, detail] = await Promise.all([
+  const [result, offers, activeOffers, detail] = await Promise.all([
     getLeadsPage({
       status: sp.status ? [sp.status as LeadStatus] : undefined,
       source: (sp.source as LeadSource) || undefined,
@@ -84,12 +86,16 @@ export default async function LeadsPage({
       page,
     }),
     getOffersWithLeads(),
+    getActiveOffers(),
     sp.lead ? toDetailDTO(sp.lead) : Promise.resolve(null),
   ]);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Leads</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Leads</h1>
+        <ManualLeadDialog offers={activeOffers} />
+      </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <input
@@ -108,6 +114,7 @@ export default async function LeadsPage({
           <option value="">Todos los sources</option>
           <option value="shopify">Shopify</option>
           <option value="whatsapp_ai">WhatsApp</option>
+          <option value="manual">Manual</option>
         </select>
         <select name="offerId" defaultValue={sp.offerId ?? ""} className="rounded-md border bg-background px-2 py-1.5 text-sm">
           <option value="">Todas las ofertas</option>
