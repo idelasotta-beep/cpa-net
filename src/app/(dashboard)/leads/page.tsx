@@ -44,6 +44,7 @@ async function toDetailDTO(id: string): Promise<LeadDetailDTO | null> {
     externalId: d.externalId,
     source: d.source,
     status: d.status,
+    offerId: d.offerId,
     offerName: d.offer?.name ?? null,
     networkOfferId: d.offer?.networkOfferId ?? null,
     networkLeadId: d.networkLeadId,
@@ -54,10 +55,16 @@ async function toDetailDTO(id: string): Promise<LeadDetailDTO | null> {
     customerRegion: d.customerRegion,
     customerCountry: d.customerCountry,
     revenueUsd: d.revenueUsd == null ? null : Number(d.revenueUsd),
+    clickId: d.clickId,
     utmSource: d.utmSource,
     utmCampaign: d.utmCampaign,
+    utmContent: d.utmContent,
+    utmTerm: d.utmTerm,
+    pushAttempts: d.pushAttempts,
+    lastPushError: d.lastPushError,
     createdAt: formatSantiago(d.createdAt),
     sentToNetworkAt: d.sentToNetworkAt ? formatSantiago(d.sentToNetworkAt) : null,
+    lastStatusChangeAt: formatSantiago(d.lastStatusChangeAt),
     rawPayload: d.rawPayload,
     history: d.statusHistory.map((h) => ({
       oldStatus: h.oldStatus,
@@ -198,7 +205,7 @@ export default async function LeadsPage({
         </div>
       </div>
 
-      {detail ? <LeadDrawer detail={detail} /> : null}
+      {detail ? <LeadDrawer detail={detail} offers={activeOffers} /> : null}
     </div>
   );
 }
