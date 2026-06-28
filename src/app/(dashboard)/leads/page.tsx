@@ -49,6 +49,7 @@ async function toDetailDTO(id: string): Promise<LeadDetailDTO | null> {
     networkLeadId: d.networkLeadId,
     customerName: d.customerName,
     customerPhone: d.customerPhone,
+    customerAddress: d.customerAddress,
     customerCity: d.customerCity,
     customerRegion: d.customerRegion,
     customerCountry: d.customerCountry,

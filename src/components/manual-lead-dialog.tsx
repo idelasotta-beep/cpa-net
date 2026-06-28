@@ -72,7 +72,7 @@ function ManualLeadForm({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="customerPhone">Teléfono</Label>
-          <Input id="customerPhone" name="customerPhone" required placeholder="+569..." />
+          <Input id="customerPhone" name="customerPhone" required placeholder="Con código de país" />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="customerCity">Ciudad</Label>
@@ -82,6 +82,11 @@ function ManualLeadForm({
           <Label htmlFor="customerRegion">Región</Label>
           <Input id="customerRegion" name="customerRegion" />
         </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="customerAddress">Dirección</Label>
+        <Input id="customerAddress" name="customerAddress" placeholder="Calle y número" />
       </div>
 
       <div className="space-y-1.5">

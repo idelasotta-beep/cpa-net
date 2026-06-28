@@ -60,6 +60,7 @@ export const adcomboClient: OfferNetworkClient = {
         subacc: lead.id, // clave de reconciliación
         subacc4: lead.source,
       });
+      if (lead.customerAddress) params.set("address", lead.customerAddress);
       if (lead.utmCampaign) params.set("subacc2", lead.utmCampaign);
       if (lead.utmContent) params.set("subacc3", lead.utmContent);
       if (lead.utmSource) params.set("utm_source", lead.utmSource);

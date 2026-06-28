@@ -30,6 +30,7 @@ export interface LeadDetailDTO {
   networkLeadId: string | null;
   customerName: string;
   customerPhone: string;
+  customerAddress: string | null;
   customerCity: string | null;
   customerRegion: string | null;
   customerCountry: string;
@@ -76,6 +77,7 @@ export function LeadDrawer({ detail }: { detail: LeadDetailDTO }) {
           <section>
             <h3 className="mb-1 text-xs font-semibold uppercase text-muted-foreground">Cliente</h3>
             <Row label="Teléfono" value={detail.customerPhone} />
+            <Row label="Dirección" value={detail.customerAddress} />
             <Row label="Ciudad" value={detail.customerCity} />
             <Row label="Región" value={detail.customerRegion} />
             <Row label="País" value={detail.customerCountry} />

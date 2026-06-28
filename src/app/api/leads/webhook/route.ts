@@ -123,6 +123,7 @@ export async function POST(req: Request): Promise<Response> {
           status: "pending",
           customerName: mapped.customerName,
           customerPhone: mapped.customerPhone,
+          customerAddress: mapped.customerAddress,
           customerCity: mapped.customerCity,
           customerRegion: mapped.customerRegion,
           customerCountry: mapped.customerCountry,

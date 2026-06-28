@@ -43,6 +43,7 @@ export interface MappedLead {
   platformProductId: string | null;
   customerName: string;
   customerPhone: string;
+  customerAddress: string | null;
   customerCity: string | null;
   customerRegion: string | null;
   customerCountry: string;
@@ -73,6 +74,7 @@ export function mapWebhookPayload(payload: WebhookPayload): MappedLead {
     platformProductId: firstItem?.dropi_product_id ?? null,
     customerName: fullName,
     customerPhone: order.customer.phone.trim(),
+    customerAddress: emptyToNull(order.shipping_address),
     customerCity: emptyToNull(order.shipping_city),
     customerRegion: emptyToNull(order.shipping_state),
     customerCountry: store.country.trim(),

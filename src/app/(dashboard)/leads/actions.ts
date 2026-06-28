@@ -21,6 +21,7 @@ export async function createManualLead(
   const offerId = String(formData.get("offerId") ?? "");
   const customerName = String(formData.get("customerName") ?? "").trim();
   const customerPhone = String(formData.get("customerPhone") ?? "").trim();
+  const customerAddress = String(formData.get("customerAddress") ?? "").trim() || null;
   const customerCity = String(formData.get("customerCity") ?? "").trim() || null;
   const customerRegion = String(formData.get("customerRegion") ?? "").trim() || null;
   const utmCampaign = String(formData.get("utmCampaign") ?? "").trim() || null;
@@ -41,6 +42,7 @@ export async function createManualLead(
     createdAt: new Date().toISOString(),
     customerName,
     customerPhone,
+    customerAddress,
     customerCity,
     customerRegion,
     utmCampaign,
@@ -54,6 +56,7 @@ export async function createManualLead(
       status: "pending",
       customerName,
       customerPhone,
+      customerAddress,
       customerCity,
       customerRegion,
       customerCountry: offer.country,
