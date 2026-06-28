@@ -22,15 +22,14 @@ const validPayload = {
     created_via: "shopify",
     currency: "CLP",
     total: 24990,
-    utm_source: "shopify",
+    utm: { source: "shopify" },
     customer: {
       name: "Test 5",
       surname: "Prueba",
       phone: "+56992498360",
       email: "x@y.com",
     },
-    shipping_city: "LA FLORIDA",
-    shipping_state: "Santiago",
+    shipping: { city: "LA FLORIDA", state: "Santiago", address: "Ramon Cruz 2137" },
     items: [
       {
         product_name: "Fresh Deos Natural",

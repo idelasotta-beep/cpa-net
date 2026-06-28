@@ -3,19 +3,18 @@ import { z } from "zod";
 /**
  * Schema del payload del webhook `order.created` de EstrategiasIA.
  *
- * Estructura confirmada contra el payload real (2026-06-27).
- * IMPORTANTE: EstrategiasIA envía `null` (no ausencia) en los campos vacíos,
- * por eso los opcionales usan `.nullish()` (acepta string | null | undefined).
+ * Estructura confirmada contra el JSON crudo real (2026-06-28):
+ *  - `order.shipping` y `order.utm` son OBJETOS ANIDADOS (no claves planas).
+ *  - EstrategiasIA envía `null` en los campos vacíos → opcionales usan `.nullish()`.
  */
 
 // String opcional tolerante a null.
 const optStr = z.string().nullish();
 
-// Número opcional tolerante a null (no coacciona null a 0 gracias a nullish).
+// Número opcional tolerante a null.
 const optNum = z.coerce.number().nullish();
 
-// Acepta string | number | null | undefined y normaliza a string | null
-// (ej. dropi_product_id "56579" / 56579 / null).
+// Acepta string | number | null | undefined y normaliza a string | null.
 const idLike = z
   .union([z.string(), z.number()])
   .nullish()
@@ -35,11 +34,32 @@ const customerSchema = z.object({
   name: z.string().min(1),
   surname: optStr,
   phone: z.string().min(1),
-  phone2: optStr,
-  phone3: optStr,
+  phone_2: optStr,
+  phone_3: optStr,
   email: optStr,
   dni: optStr,
 });
+
+const shippingSchema = z
+  .object({
+    address: optStr,
+    city: optStr,
+    state: optStr,
+    zip_code: optStr,
+    notes: optStr,
+    neighborhood: optStr,
+  })
+  .nullish();
+
+const utmSchema = z
+  .object({
+    source: optStr,
+    medium: optStr,
+    campaign: optStr,
+    content: optStr,
+    term: optStr,
+  })
+  .nullish();
 
 const orderSchema = z.object({
   number: z.coerce.string().min(1),
@@ -48,22 +68,14 @@ const orderSchema = z.object({
   currency: optStr,
   status: optStr,
   payment_method: optStr,
+  notes: optStr,
   total: optNum,
   subtotal: optNum,
   discount: optNum,
   shipping_cost: optNum,
-  utm_source: optStr,
-  utm_medium: optStr,
-  utm_campaign: optStr,
-  utm_content: optStr,
-  utm_term: optStr,
   customer: customerSchema,
-  shipping_address: optStr,
-  shipping_city: optStr,
-  shipping_state: optStr,
-  shipping_neighborhood: optStr,
-  shipping_zip_code: optStr,
-  shipping_notes: optStr,
+  shipping: shippingSchema,
+  utm: utmSchema,
   items: z.array(itemSchema).optional().default([]),
 });
 

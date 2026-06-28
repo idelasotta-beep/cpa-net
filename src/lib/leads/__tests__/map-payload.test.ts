@@ -15,16 +15,14 @@ const base = {
     created_via: "shopify",
     currency: "CLP",
     total: 24990,
-    utm_source: "shopify",
-    utm_campaign: "",
+    utm: { source: "shopify", campaign: "" },
     customer: {
       name: "Test 5",
       surname: "Prueba",
       phone: "+56992498360",
       email: "x@y.com",
     },
-    shipping_city: "LA FLORIDA",
-    shipping_state: "Santiago",
+    shipping: { city: "LA FLORIDA", state: "Santiago", address: "Ramon Cruz 2137" },
     items: [
       {
         product_name: "Fresh Deos Natural",
@@ -46,6 +44,7 @@ describe("mapWebhookPayload", () => {
       platformProductId: "56579",
       customerName: "Test 5 Prueba",
       customerPhone: "+56992498360",
+      customerAddress: "Ramon Cruz 2137",
       customerCity: "LA FLORIDA",
       customerRegion: "Santiago",
       customerCountry: "CL",
@@ -81,7 +80,7 @@ describe("mapWebhookPayload", () => {
       ...base,
       order: {
         ...base.order,
-        utm_campaign: null,
+        utm: { source: "shopify", campaign: null },
         customer: { ...base.order.customer, dni: null, surname: null },
         items: [
           {
