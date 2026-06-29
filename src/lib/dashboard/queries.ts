@@ -310,6 +310,14 @@ export async function getCosts() {
   });
 }
 
+/** Redes CPA con su estado (para Ajustes). */
+export async function getNetworks() {
+  return prisma.network.findMany({
+    select: { id: true, slug: true, name: true, active: true, pushEnabled: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 /** Ofertas activas (todas las redes) para el select de creación manual de lead. */
 export async function getActiveOffers() {
   return prisma.offer.findMany({

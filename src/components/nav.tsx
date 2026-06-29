@@ -20,6 +20,7 @@ const LINKS = [
   { href: "/insights", label: "Insights" },
   { href: "/leads", label: "Leads" },
   { href: "/costs", label: "Costos" },
+  { href: "/settings", label: "Ajustes" },
 ];
 
 function NavLinks({

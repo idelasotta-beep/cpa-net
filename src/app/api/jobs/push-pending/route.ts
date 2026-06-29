@@ -25,6 +25,8 @@ export async function GET(req: Request): Promise<Response> {
         status: "pending",
         offerId: { not: null },
         pushAttempts: { lt: env.MAX_PUSH_ATTEMPTS },
+        // Solo redes activas y con el envío habilitado (kill switch desde el dashboard).
+        offer: { network: { is: { active: true, pushEnabled: true } } },
       },
       include: { offer: { include: { network: true } } },
       orderBy: { createdAt: "asc" },

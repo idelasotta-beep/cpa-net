@@ -37,12 +37,13 @@ enum StatusChangeSource {
 }
 
 model Network {
-  id        String   @id @default(uuid()) @db.Uuid
-  slug      String   @unique // ej. "adcombo"
-  name      String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique // ej. "adcombo"
+  name        String
+  active      Boolean  @default(true)
+  pushEnabled Boolean  @default(false) @map("push_enabled") // kill switch del push-pending por red
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   offers Offer[]
 
