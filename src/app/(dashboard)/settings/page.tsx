@@ -1,5 +1,6 @@
 import { DailyReportSettings } from "@/components/daily-report-settings";
 import { NetworkPushToggle } from "@/components/network-push-toggle";
+import { TestAlertButton } from "@/components/test-alert-button";
 import {
   Card,
   CardContent,
@@ -7,16 +8,57 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { env } from "@/lib/env";
 import { getAppSettings, getNetworks } from "@/lib/dashboard/queries";
 
 export const dynamic = "force-dynamic";
 
+function ChannelRow({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <span className="text-sm">{label}</span>
+      <span
+        className={
+          ok
+            ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+            : "rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+        }
+      >
+        {ok ? "Configurado" : "No configurado"}
+      </span>
+    </div>
+  );
+}
+
 export default async function SettingsPage() {
   const [networks, settings] = await Promise.all([getNetworks(), getAppSettings()]);
+
+  const telegramOk = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID);
+  const emailOk = Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.EMAIL_TO);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Ajustes</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Notificaciones</CardTitle>
+          <CardDescription>
+            Canales por donde salen las alertas (leads fallidos, ventas confirmadas) y el
+            reporte diario. Se configuran con variables de entorno en Railway (los secretos
+            no se guardan en la base). Acá ves el estado y podés enviar una prueba.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="divide-y">
+            <ChannelRow label="Telegram" ok={telegramOk} />
+            <ChannelRow label="Email (SMTP)" ok={emailOk} />
+          </div>
+          <div className="mt-4">
+            <TestAlertButton disabled={!telegramOk && !emailOk} />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
