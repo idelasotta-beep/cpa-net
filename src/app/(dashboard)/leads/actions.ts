@@ -6,6 +6,27 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/server";
 import { prisma } from "@/lib/db";
+import { runPollStatus } from "@/lib/jobs/poll-status";
+
+export interface RefreshResult {
+  ok: boolean;
+  checked?: number;
+  updated?: number;
+  error?: string;
+}
+
+/** Dispara el poll-status on-demand desde el dashboard (sin esperar el cron). */
+export async function refreshStatuses(): Promise<RefreshResult> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "No autorizado" };
+  try {
+    const r = await runPollStatus();
+    revalidatePath("/leads");
+    return { ok: true, checked: r.checked, updated: r.updated };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "error" };
+  }
+}
 
 function nullable(v: FormDataEntryValue | null): string | null {
   const s = String(v ?? "").trim();

@@ -2,6 +2,7 @@ import type { LeadSource, LeadStatus } from "@prisma/client";
 import Link from "next/link";
 import { LeadDrawer, type LeadDetailDTO } from "@/components/lead-drawer";
 import { ManualLeadDialog } from "@/components/manual-lead-dialog";
+import { RefreshStatusesButton } from "@/components/refresh-statuses-button";
 import { StatusBadge } from "@/components/status-badge";
 import {
   Table,
@@ -100,9 +101,12 @@ export default async function LeadsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Leads</h1>
-        <ManualLeadDialog offers={activeOffers} />
+        <div className="flex items-center gap-2">
+          <RefreshStatusesButton />
+          <ManualLeadDialog offers={activeOffers} />
+        </div>
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2">
