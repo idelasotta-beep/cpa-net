@@ -95,6 +95,17 @@ export function santiagoWeekday(date: Date): number {
   return new Date(Date.UTC(+m.year!, +m.month! - 1, +m.day!)).getUTCDay();
 }
 
+/** Clave "YYYY-MM-DD" (Santiago) del día anterior. */
+export function yesterdayKey(now = new Date()): string {
+  const { y, mo, d } = santiagoToday(now);
+  const base = new Date(Date.UTC(y, mo - 1, d));
+  base.setUTCDate(base.getUTCDate() - 1);
+  const yy = base.getUTCFullYear();
+  const mm = String(base.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(base.getUTCDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
 /** Formato legible para la UI (es-CL). */
 export function formatSantiago(date: Date): string {
   return new Intl.DateTimeFormat("es-CL", {

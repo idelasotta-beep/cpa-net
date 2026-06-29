@@ -340,6 +340,15 @@ export async function getCosts() {
   });
 }
 
+/** Config global (fila única). La crea si no existe. */
+export async function getAppSettings() {
+  return prisma.appSettings.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: { id: "singleton" },
+  });
+}
+
 /** Redes CPA con su estado (para Ajustes). */
 export async function getNetworks() {
   return prisma.network.findMany({

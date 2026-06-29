@@ -135,6 +135,17 @@ model LeadStatusHistory {
   @@map("lead_status_history")
 }
 
+// Config global de la app (fila única, id = "singleton").
+model AppSettings {
+  id                  String   @id @default("singleton")
+  dailyReportEnabled  Boolean  @default(false) @map("daily_report_enabled")
+  dailyReportHour     Int      @default(9) @map("daily_report_hour") // 0-23, hora Santiago
+  lastDailyReportDate String?  @map("last_daily_report_date") // "YYYY-MM-DD" Santiago (dedup)
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}
+
 model DailyCost {
   id        String   @id @default(uuid()) @db.Uuid
   offerId   String   @map("offer_id") @db.Uuid

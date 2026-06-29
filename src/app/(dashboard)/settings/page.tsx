@@ -1,3 +1,4 @@
+import { DailyReportSettings } from "@/components/daily-report-settings";
 import { NetworkPushToggle } from "@/components/network-push-toggle";
 import {
   Card,
@@ -6,12 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getNetworks } from "@/lib/dashboard/queries";
+import { getAppSettings, getNetworks } from "@/lib/dashboard/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const networks = await getNetworks();
+  const [networks, settings] = await Promise.all([getNetworks(), getAppSettings()]);
 
   return (
     <div className="space-y-6">
@@ -45,6 +46,23 @@ export default async function SettingsPage() {
               ))}
             </ul>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Reporte diario por Telegram</CardTitle>
+          <CardDescription>
+            Envía un resumen del día anterior (leads, approval, revenue, profit, ROI) a la
+            hora elegida. Requiere tener Telegram configurado (env) y el cron horario
+            <code className="mx-1">/api/jobs/daily-report</code> activo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DailyReportSettings
+            enabled={settings.dailyReportEnabled}
+            hour={settings.dailyReportHour}
+          />
         </CardContent>
       </Card>
     </div>
