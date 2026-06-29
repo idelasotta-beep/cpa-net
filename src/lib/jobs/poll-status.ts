@@ -2,7 +2,7 @@ import type { Lead } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { getNetworkClient } from "@/lib/networks/registry";
-import { sendTelegram } from "@/lib/notify";
+import { sendAlert } from "@/lib/notify";
 
 const log = logger.child({ job: "poll-status" });
 const BATCH = 500; // límite de la status API de Adcombo por request
@@ -87,7 +87,7 @@ export async function runPollStatus(): Promise<PollStatusResult> {
 
   if (confirmed > 0) {
     const rev = confirmedRevenue ? ` (+$${confirmedRevenue.toFixed(2)} USD)` : "";
-    await sendTelegram(`💰 <b>${confirmed} venta(s) confirmada(s)</b>${rev} 🎉`);
+    await sendAlert("💰 Ventas confirmadas", `${confirmed} venta(s) confirmada(s)${rev} 🎉`);
   }
 
   return { candidates: leads.length, checked, updated };

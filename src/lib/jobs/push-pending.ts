@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { logger, maskPhone } from "@/lib/logger";
 import { getNetworkClient } from "@/lib/networks/registry";
-import { sendTelegram } from "@/lib/notify";
+import { sendAlert } from "@/lib/notify";
 
 const log = logger.child({ job: "push-pending" });
 const BATCH = 50;
@@ -113,8 +113,9 @@ export async function runPushPending(): Promise<PushPendingResult> {
   log.info({ processed: leads.length, ok, failed, skipped }, "push-pending terminado");
 
   if (failed > 0) {
-    await sendTelegram(
-      `⚠️ <b>${failed} lead(s) fallaron</b> el envío a la red (agotaron los reintentos). Revisalos en el dashboard (filtro estado "Falló").`,
+    await sendAlert(
+      "⚠️ Leads fallidos",
+      `${failed} lead(s) fallaron el envío a la red (agotaron los reintentos). Revisalos en el dashboard (filtro estado "Falló").`,
     );
   }
 

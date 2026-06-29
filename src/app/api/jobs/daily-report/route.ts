@@ -10,7 +10,7 @@ import {
 import { formatPct, formatUsd } from "@/lib/dashboard/metrics";
 import { getAppSettings, getSummary } from "@/lib/dashboard/queries";
 import { logger } from "@/lib/logger";
-import { sendTelegram } from "@/lib/notify";
+import { sendAlert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -41,19 +41,18 @@ export async function GET(req: Request): Promise<Response> {
     const s = await getSummary(from, to);
     const c = s.counts;
 
-    const msg = [
-      `📊 <b>Reporte diario</b> — ${ymd}`,
-      "",
-      `Leads nuevos: <b>${s.total}</b>`,
+    const subject = `📊 Reporte diario — ${ymd}`;
+    const body = [
+      `Leads nuevos: ${s.total}`,
       `🟢 Aprobados: ${c.lead} · 🔴 Rechazados: ${c.reject} · 🟡 Hold: ${c.hold} · 🗑 Trash: ${c.trash}`,
       `Pendientes: ${c.pending} · Enviados: ${c.sent_to_network} · Fallidos: ${c.failed}`,
       "",
-      `Approval: <b>${formatPct(s.approval)}</b> (quality ${formatPct(s.quality)})`,
-      `💵 Revenue: <b>${formatUsd(s.revenue)}</b> · Costo: ${formatUsd(s.cost)}`,
-      `📈 Profit: <b>${formatUsd(s.profit)}</b> · ROI: ${s.cost === 0 ? "—" : formatPct(s.roi)}`,
+      `Approval: ${formatPct(s.approval)} (quality ${formatPct(s.quality)})`,
+      `💵 Revenue: ${formatUsd(s.revenue)} · Costo: ${formatUsd(s.cost)}`,
+      `📈 Profit: ${formatUsd(s.profit)} · ROI: ${s.cost === 0 ? "—" : formatPct(s.roi)}`,
     ].join("\n");
 
-    await sendTelegram(msg);
+    await sendAlert(subject, body);
 
     await prisma.appSettings.update({
       where: { id: "singleton" },

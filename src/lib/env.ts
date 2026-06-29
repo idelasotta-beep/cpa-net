@@ -47,6 +47,18 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional().default(""),
   TELEGRAM_CHAT_ID: z.string().optional().default(""),
 
+  // ── Alertas Email vía SMTP (opcional) ──
+  SMTP_HOST: z.string().optional().default(""),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional().default(""),
+  SMTP_PASS: z.string().optional().default(""),
+  SMTP_SECURE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  EMAIL_FROM: z.string().optional().default(""),
+  EMAIL_TO: z.string().optional().default(""),
+
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
     .default("info"),
