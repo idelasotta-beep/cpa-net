@@ -43,6 +43,10 @@ const envSchema = z.object({
   DASHBOARD_USER_PASSWORD_HASH: z.string().optional().default(""), // bcrypt
   SESSION_SECRET: z.string().optional().default(""), // firma del JWT de sesión
 
+  // ── Alertas Telegram (opcional) ──
+  TELEGRAM_BOT_TOKEN: z.string().optional().default(""),
+  TELEGRAM_CHAT_ID: z.string().optional().default(""),
+
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
     .default("info"),

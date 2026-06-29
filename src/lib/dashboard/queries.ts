@@ -292,6 +292,36 @@ export async function getLeadsPage(f: LeadFilters) {
   return { rows, total, page: f.page, pageSize: PAGE_SIZE, pages: Math.ceil(total / PAGE_SIZE) };
 }
 
+function buildLeadWhere(f: Omit<LeadFilters, "page">): Prisma.LeadWhereInput {
+  return {
+    ...(f.status && f.status.length ? { status: { in: f.status } } : {}),
+    ...(f.source ? { source: f.source } : {}),
+    ...(f.offerId ? { offerId: f.offerId } : {}),
+    ...(f.city ? { customerCity: { contains: f.city, mode: "insensitive" } } : {}),
+    ...(f.from || f.to
+      ? { createdAt: { ...(f.from ? { gte: f.from } : {}), ...(f.to ? { lte: f.to } : {}) } }
+      : {}),
+    ...(f.search
+      ? {
+          OR: [
+            { customerName: { contains: f.search, mode: "insensitive" } },
+            { customerPhone: { contains: f.search } },
+          ],
+        }
+      : {}),
+  };
+}
+
+/** Leads que matchean los filtros, para exportar a CSV (cap 5000). */
+export async function getLeadsForExport(f: Omit<LeadFilters, "page">) {
+  return prisma.lead.findMany({
+    where: buildLeadWhere(f),
+    include: { offer: { select: { name: true, networkOfferId: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 5000,
+  });
+}
+
 export async function getLeadDetail(id: string) {
   return prisma.lead.findUnique({
     where: { id },

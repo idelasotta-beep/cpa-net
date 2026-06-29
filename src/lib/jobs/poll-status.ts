@@ -2,6 +2,7 @@ import type { Lead } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { getNetworkClient } from "@/lib/networks/registry";
+import { sendTelegram } from "@/lib/notify";
 
 const log = logger.child({ job: "poll-status" });
 const BATCH = 500; // límite de la status API de Adcombo por request
@@ -38,6 +39,8 @@ export async function runPollStatus(): Promise<PollStatusResult> {
 
   let checked = 0;
   let updated = 0;
+  let confirmed = 0;
+  let confirmedRevenue = 0;
 
   for (const [slug, ids] of byNetwork) {
     const client = getNetworkClient(slug);
@@ -72,10 +75,20 @@ export async function runPollStatus(): Promise<PollStatusResult> {
           },
         });
         updated++;
+        if (r.status === "lead") {
+          confirmed++;
+          confirmedRevenue += r.revenueUsd ?? 0;
+        }
       }
     }
   }
 
-  log.info({ candidates: leads.length, checked, updated }, "poll-status terminado");
+  log.info({ candidates: leads.length, checked, updated, confirmed }, "poll-status terminado");
+
+  if (confirmed > 0) {
+    const rev = confirmedRevenue ? ` (+$${confirmedRevenue.toFixed(2)} USD)` : "";
+    await sendTelegram(`💰 <b>${confirmed} venta(s) confirmada(s)</b>${rev} 🎉`);
+  }
+
   return { candidates: leads.length, checked, updated };
 }

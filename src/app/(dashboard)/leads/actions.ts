@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/server";
 import { prisma } from "@/lib/db";
 import { runPollStatus } from "@/lib/jobs/poll-status";
+import { runPushPending } from "@/lib/jobs/push-pending";
 
 export interface RefreshResult {
   ok: boolean;
@@ -23,6 +24,27 @@ export async function refreshStatuses(): Promise<RefreshResult> {
     const r = await runPollStatus();
     revalidatePath("/leads");
     return { ok: true, checked: r.checked, updated: r.updated };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "error" };
+  }
+}
+
+export interface PushNowResult {
+  ok: boolean;
+  ok_count?: number;
+  failed?: number;
+  processed?: number;
+  error?: string;
+}
+
+/** Dispara el push-pending on-demand (respeta el kill switch pushEnabled). */
+export async function pushNow(): Promise<PushNowResult> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "No autorizado" };
+  try {
+    const r = await runPushPending();
+    revalidatePath("/leads");
+    return { ok: true, ok_count: r.ok, failed: r.failed, processed: r.processed };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "error" };
   }

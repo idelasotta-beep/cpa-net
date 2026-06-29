@@ -2,8 +2,10 @@ import type { LeadSource, LeadStatus } from "@prisma/client";
 import Link from "next/link";
 import { LeadDrawer, type LeadDetailDTO } from "@/components/lead-drawer";
 import { ManualLeadDialog } from "@/components/manual-lead-dialog";
+import { PushNowButton } from "@/components/push-now-button";
 import { RefreshStatusesButton } from "@/components/refresh-statuses-button";
 import { StatusBadge } from "@/components/status-badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -103,8 +105,15 @@ export default async function LeadsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Leads</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/export/leads?${buildQuery(sp, { lead: undefined, edit: undefined, page: undefined })}`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Exportar CSV
+          </a>
           <RefreshStatusesButton />
+          <PushNowButton />
           <ManualLeadDialog offers={activeOffers} />
         </div>
       </div>
