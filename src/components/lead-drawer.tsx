@@ -3,7 +3,7 @@
 import type { LeadStatus } from "@prisma/client";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { deleteLead, updateLead } from "@/app/(dashboard)/leads/actions";
+import { deleteLead, retryLead, updateLead } from "@/app/(dashboard)/leads/actions";
 import type { OfferOption } from "@/components/manual-lead-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -187,6 +187,21 @@ export function LeadDrawer({
           </form>
         ) : (
           <div className="space-y-6 px-4 pb-8">
+            {detail.status === "failed" ? (
+              <form action={retryLead}>
+                <input type="hidden" name="id" value={detail.id} />
+                <input type="hidden" name="returnTo" value={viewUrl} />
+                <Button type="submit" className="w-full">
+                  Reintentar envío
+                </Button>
+                {detail.lastPushError ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Último error: {detail.lastPushError}
+                  </p>
+                ) : null}
+              </form>
+            ) : null}
+
             <div className="flex gap-2">
               <Link href={editUrl} className={cn(buttonVariants({ size: "sm" }), "flex-1")}>
                 Editar

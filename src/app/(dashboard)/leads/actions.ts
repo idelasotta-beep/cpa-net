@@ -144,6 +144,39 @@ export async function updateLead(formData: FormData): Promise<void> {
   redirect(safeReturn(formData.get("returnTo")));
 }
 
+/** Reintenta un lead que quedó en `failed`: vuelve a pending y resetea el contador. */
+export async function retryLead(formData: FormData): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const current = await prisma.lead.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+  if (!current) return;
+
+  await prisma.lead.update({
+    where: { id },
+    data: {
+      status: "pending",
+      pushAttempts: 0,
+      lastPushError: null,
+      lastStatusChangeAt: new Date(),
+      statusHistory: {
+        create: {
+          oldStatus: current.status,
+          newStatus: "pending",
+          source: "manual",
+          note: `reintento manual por ${session.email}`,
+        },
+      },
+    },
+  });
+  revalidatePath("/leads");
+  redirect(safeReturn(formData.get("returnTo")));
+}
+
 /** Borra un lead (y su historial por cascade). */
 export async function deleteLead(formData: FormData): Promise<void> {
   const session = await getSession();
