@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/server";
 import { prisma } from "@/lib/db";
-import { sendAlert } from "@/lib/notify";
+import { type ChannelResult, sendAlert } from "@/lib/notify";
 
 /** Configura el email por Resend desde Ajustes (API key se guarda en la base). */
 export async function setEmailConfig(
@@ -38,15 +38,15 @@ export async function setEmailConfig(
   revalidatePath("/settings");
 }
 
-/** Envía una alerta de prueba a todos los canales configurados. */
-export async function sendTestAlert(): Promise<{ ok: boolean }> {
+/** Envía una alerta de prueba y devuelve el resultado por canal. */
+export async function sendTestAlert(): Promise<{ results: ChannelResult[] }> {
   const session = await getSession();
-  if (!session) return { ok: false };
-  await sendAlert(
+  if (!session) return { results: [] };
+  const results = await sendAlert(
     "✅ Prueba CPA Net",
     "Alerta de prueba. Si la recibís, las notificaciones están funcionando.",
   );
-  return { ok: true };
+  return { results };
 }
 
 /** Habilita/deshabilita el push-pending de una red (kill switch). */

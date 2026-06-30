@@ -6,26 +6,18 @@ const log = logger.child({ mod: "notify" });
 
 const RESEND_DEFAULT_FROM = "onboarding@resend.dev";
 
-async function sendViaResend(
-  apiKey: string,
-  from: string,
-  to: string,
-  subject: string,
-  text: string,
-): Promise<void> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-    body: JSON.stringify({ from, to: [to], subject, text }),
-  });
-  if (!res.ok) {
-    log.warn({ status: res.status, body: await res.text() }, "resend no-ok");
-  }
+export interface ChannelResult {
+  channel: "telegram" | "email";
+  ok?: boolean;
+  skipped?: boolean;
+  error?: string;
 }
 
-/** Envía un mensaje por Telegram. No-op si no está configurado. */
-export async function sendTelegram(text: string): Promise<void> {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+/** Envía un mensaje por Telegram. */
+export async function sendTelegram(text: string): Promise<ChannelResult> {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+    return { channel: "telegram", skipped: true };
+  }
   try {
     const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
     const res = await fetch(url, {
@@ -37,36 +29,49 @@ export async function sendTelegram(text: string): Promise<void> {
         disable_web_page_preview: true,
       }),
     });
-    if (!res.ok) log.warn({ status: res.status }, "telegram sendMessage no-ok");
+    if (!res.ok) {
+      const body = await res.text();
+      log.warn({ status: res.status, body }, "telegram no-ok");
+      return { channel: "telegram", ok: false, error: `HTTP ${res.status}: ${body}` };
+    }
+    return { channel: "telegram", ok: true };
   } catch (e) {
-    log.warn({ err: e instanceof Error ? e.message : String(e) }, "telegram falló");
+    const error = e instanceof Error ? e.message : String(e);
+    return { channel: "telegram", ok: false, error };
   }
 }
 
-/**
- * Envía un email. Prioridad: Resend (config en la base, desde Ajustes); si no,
- * SMTP por env vars. No-op si nada está configurado.
- */
-export async function sendEmail(subject: string, text: string): Promise<void> {
-  // 1) Resend (configurable desde el dashboard).
+/** Envía un email (Resend si está configurado en la base; si no, SMTP por env). */
+export async function sendEmail(subject: string, text: string): Promise<ChannelResult> {
+  // 1) Resend (configurable desde Ajustes).
   try {
     const s = await prisma.appSettings.findUnique({ where: { id: "singleton" } });
     if (s?.emailEnabled && s.resendApiKey && s.emailTo) {
-      await sendViaResend(
-        s.resendApiKey,
-        s.emailFrom || RESEND_DEFAULT_FROM,
-        s.emailTo,
-        subject,
-        text,
-      );
-      return;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { authorization: `Bearer ${s.resendApiKey}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          from: s.emailFrom || RESEND_DEFAULT_FROM,
+          to: [s.emailTo],
+          subject,
+          text,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        log.warn({ status: res.status, body }, "resend no-ok");
+        return { channel: "email", ok: false, error: `Resend HTTP ${res.status}: ${body}` };
+      }
+      return { channel: "email", ok: true };
     }
   } catch (e) {
-    log.warn({ err: e instanceof Error ? e.message : String(e) }, "resend falló");
+    return { channel: "email", ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 
   // 2) Fallback SMTP por env vars.
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS || !env.EMAIL_TO) return;
+  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS || !env.EMAIL_TO) {
+    return { channel: "email", skipped: true };
+  }
   try {
     const nodemailer = (await import("nodemailer")).default;
     const transport = nodemailer.createTransport({
@@ -81,18 +86,17 @@ export async function sendEmail(subject: string, text: string): Promise<void> {
       subject,
       text,
     });
+    return { channel: "email", ok: true };
   } catch (e) {
-    log.warn({ err: e instanceof Error ? e.message : String(e) }, "email SMTP falló");
+    return { channel: "email", ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
 
-/**
- * Despacha una alerta a TODOS los canales configurados (Telegram + email).
- * Las alertas nunca rompen el flujo principal.
- */
-export async function sendAlert(subject: string, body: string): Promise<void> {
-  await Promise.allSettled([
+/** Despacha a TODOS los canales y devuelve el resultado de cada uno. */
+export async function sendAlert(subject: string, body: string): Promise<ChannelResult[]> {
+  const [tg, em] = await Promise.all([
     sendTelegram(`${subject}\n\n${body}`),
     sendEmail(subject, body),
   ]);
+  return [tg, em];
 }
