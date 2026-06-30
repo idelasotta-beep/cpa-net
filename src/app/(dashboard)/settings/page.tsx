@@ -122,10 +122,11 @@ export default async function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Reporte diario por Telegram</CardTitle>
+          <CardTitle className="text-base">Reporte diario</CardTitle>
           <CardDescription>
             Envía un resumen del día anterior (leads, approval, revenue, profit, ROI) a la
-            hora elegida. Requiere tener Telegram configurado (env) y el cron horario
+            hora elegida, por <strong>todos los canales activos</strong> (Telegram y/o
+            email). Requiere el cron horario
             <code className="mx-1">/api/jobs/daily-report</code> activo.
           </CardDescription>
         </CardHeader>
