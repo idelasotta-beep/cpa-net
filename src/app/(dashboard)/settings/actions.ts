@@ -1,9 +1,42 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/server";
 import { prisma } from "@/lib/db";
 import { sendAlert } from "@/lib/notify";
+
+/** Configura el email por Resend desde Ajustes (API key se guarda en la base). */
+export async function setEmailConfig(
+  enabled: boolean,
+  apiKey: string,
+  to: string,
+  from: string,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+
+  const update: Prisma.AppSettingsUpdateInput = {
+    emailEnabled: enabled,
+    emailTo: to.trim() || null,
+    emailFrom: from.trim() || null,
+  };
+  // Solo actualiza la API key si se ingresó una nueva (vacío = mantener la actual).
+  if (apiKey.trim()) update.resendApiKey = apiKey.trim();
+
+  await prisma.appSettings.upsert({
+    where: { id: "singleton" },
+    update,
+    create: {
+      id: "singleton",
+      emailEnabled: enabled,
+      emailTo: to.trim() || null,
+      emailFrom: from.trim() || null,
+      resendApiKey: apiKey.trim() || null,
+    },
+  });
+  revalidatePath("/settings");
+}
 
 /** Envía una alerta de prueba a todos los canales configurados. */
 export async function sendTestAlert(): Promise<{ ok: boolean }> {

@@ -141,7 +141,14 @@ model AppSettings {
   dailyReportEnabled  Boolean  @default(false) @map("daily_report_enabled")
   dailyReportHour     Int      @default(9) @map("daily_report_hour") // 0-23, hora Santiago
   lastDailyReportDate String?  @map("last_daily_report_date") // "YYYY-MM-DD" Santiago (dedup)
-  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Email vía Resend, configurable desde Ajustes (sin tocar Railway).
+  emailEnabled Boolean @default(false) @map("email_enabled")
+  resendApiKey String? @map("resend_api_key")
+  emailTo      String? @map("email_to")
+  emailFrom    String? @map("email_from") // default onboarding@resend.dev
+
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("app_settings")
 }

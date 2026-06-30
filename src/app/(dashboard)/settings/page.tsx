@@ -1,4 +1,5 @@
 import { DailyReportSettings } from "@/components/daily-report-settings";
+import { EmailSettings } from "@/components/email-settings";
 import { NetworkPushToggle } from "@/components/network-push-toggle";
 import { TestAlertButton } from "@/components/test-alert-button";
 import {
@@ -34,7 +35,13 @@ export default async function SettingsPage() {
   const [networks, settings] = await Promise.all([getNetworks(), getAppSettings()]);
 
   const telegramOk = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID);
-  const emailOk = Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.EMAIL_TO);
+  const emailResendOk = Boolean(
+    settings.emailEnabled && settings.resendApiKey && settings.emailTo,
+  );
+  const emailSmtpOk = Boolean(
+    env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.EMAIL_TO,
+  );
+  const emailOk = emailResendOk || emailSmtpOk;
 
   return (
     <div className="space-y-6">
@@ -57,6 +64,28 @@ export default async function SettingsPage() {
           <div className="mt-4">
             <TestAlertButton disabled={!telegramOk && !emailOk} />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Email (Resend)</CardTitle>
+          <CardDescription>
+            La forma más simple: registrate gratis en{" "}
+            <a href="https://resend.com" target="_blank" rel="noreferrer" className="underline">
+              resend.com
+            </a>
+            , creá una API key y pegала acá. Para enviarte alertas a vos mismo funciona sin
+            verificar dominio (dejá el remitente vacío). 3000 emails/mes gratis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EmailSettings
+            enabled={settings.emailEnabled}
+            hasKey={Boolean(settings.resendApiKey)}
+            to={settings.emailTo ?? ""}
+            from={settings.emailFrom ?? ""}
+          />
         </CardContent>
       </Card>
 
