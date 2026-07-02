@@ -93,17 +93,18 @@ export async function POST(req: Request): Promise<Response> {
 
     const logCtx = {
       externalId: mapped.externalId,
-      source: mapped.source,
+      platform: mapped.platform,
+      channel: mapped.channel,
       phone: maskPhone(mapped.customerPhone),
       offerId,
     };
 
-    // 8. Idempotencia: si ya existe (externalId, source), no duplicar.
+    // 8. Idempotencia: si ya existe (externalId, platform), no duplicar.
     const existing = await prisma.lead.findUnique({
       where: {
-        externalId_source: {
+        externalId_platform: {
           externalId: mapped.externalId,
-          source: mapped.source,
+          platform: mapped.platform,
         },
       },
       select: { id: true },
@@ -118,7 +119,8 @@ export async function POST(req: Request): Promise<Response> {
       const lead = await prisma.lead.create({
         data: {
           externalId: mapped.externalId,
-          source: mapped.source,
+          platform: mapped.platform,
+          channel: mapped.channel,
           offerId,
           status: "pending",
           customerName: mapped.customerName,
@@ -146,16 +148,16 @@ export async function POST(req: Request): Promise<Response> {
       log.info({ ...logCtx, leadId: lead.id }, "lead creado");
       return NextResponse.json({ status: "created", lead_id: lead.id });
     } catch (e) {
-      // Carrera: otro request creó el mismo (externalId, source) en paralelo.
+      // Carrera: otro request creó el mismo (externalId, platform) en paralelo.
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === "P2002"
       ) {
         const dup = await prisma.lead.findUnique({
           where: {
-            externalId_source: {
+            externalId_platform: {
               externalId: mapped.externalId,
-              source: mapped.source,
+              platform: mapped.platform,
             },
           },
           select: { id: true },

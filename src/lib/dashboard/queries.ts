@@ -1,4 +1,4 @@
-import type { LeadSource, LeadStatus, Prisma } from "@prisma/client";
+import type { Channel, LeadStatus, Platform, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { santiagoDayKey, santiagoHour, santiagoWeekday } from "./dates";
 import {
@@ -21,7 +21,8 @@ interface LeadLite {
   offerId: string | null;
   createdAt: Date;
   customerCity: string | null;
-  source: LeadSource;
+  platform: Platform;
+  channel: Channel;
   utmCampaign: string | null;
 }
 
@@ -34,7 +35,8 @@ async function fetchLeads(where: Prisma.LeadWhereInput): Promise<LeadLite[]> {
       offerId: true,
       createdAt: true,
       customerCity: true,
-      source: true,
+      platform: true,
+      channel: true,
       utmCampaign: true,
     },
   });
@@ -213,8 +215,11 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
   const cityTop = cityRows.slice(0, 20);
   const cityBottom = cityRows.slice(-20).reverse();
 
-  // Por source.
-  const sourceRows = aggregateBy(leads, (l) => l.source).sort(
+  // Por plataforma y por canal.
+  const platformRows = aggregateBy(leads, (l) => l.platform).sort(
+    (a, b) => b.total - a.total,
+  );
+  const channelRows = aggregateBy(leads, (l) => l.channel).sort(
     (a, b) => b.total - a.total,
   );
 
@@ -242,13 +247,14 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
     });
   }
 
-  return { cityTop, cityBottom, sourceRows, campaignRows, heatmap, totalLeads: leads.length };
+  return { cityTop, cityBottom, platformRows, channelRows, campaignRows, heatmap, totalLeads: leads.length };
 }
 
 // ── Vista 4: Leads ──
 export interface LeadFilters {
   status?: LeadStatus[];
-  source?: LeadSource;
+  platform?: Platform;
+  channel?: Channel;
   offerId?: string;
   city?: string;
   from?: Date;
@@ -260,23 +266,7 @@ export interface LeadFilters {
 const PAGE_SIZE = 50;
 
 export async function getLeadsPage(f: LeadFilters) {
-  const where: Prisma.LeadWhereInput = {
-    ...(f.status && f.status.length ? { status: { in: f.status } } : {}),
-    ...(f.source ? { source: f.source } : {}),
-    ...(f.offerId ? { offerId: f.offerId } : {}),
-    ...(f.city ? { customerCity: { contains: f.city, mode: "insensitive" } } : {}),
-    ...(f.from || f.to
-      ? { createdAt: { ...(f.from ? { gte: f.from } : {}), ...(f.to ? { lte: f.to } : {}) } }
-      : {}),
-    ...(f.search
-      ? {
-          OR: [
-            { customerName: { contains: f.search, mode: "insensitive" } },
-            { customerPhone: { contains: f.search } },
-          ],
-        }
-      : {}),
-  };
+  const where = buildLeadWhere(f);
 
   const [rows, total] = await Promise.all([
     prisma.lead.findMany({
@@ -295,7 +285,8 @@ export async function getLeadsPage(f: LeadFilters) {
 function buildLeadWhere(f: Omit<LeadFilters, "page">): Prisma.LeadWhereInput {
   return {
     ...(f.status && f.status.length ? { status: { in: f.status } } : {}),
-    ...(f.source ? { source: f.source } : {}),
+    ...(f.platform ? { platform: f.platform } : {}),
+    ...(f.channel ? { channel: f.channel } : {}),
     ...(f.offerId ? { offerId: f.offerId } : {}),
     ...(f.city ? { customerCity: { contains: f.city, mode: "insensitive" } } : {}),
     ...(f.from || f.to

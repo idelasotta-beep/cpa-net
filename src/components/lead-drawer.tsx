@@ -1,6 +1,6 @@
 "use client";
 
-import type { LeadStatus } from "@prisma/client";
+import type { Channel, LeadStatus, Platform } from "@prisma/client";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { deleteLead, retryLead, updateLead } from "@/app/(dashboard)/leads/actions";
@@ -18,8 +18,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  CHANNEL_LABEL,
   ORDERED_STATUSES,
-  SOURCE_LABEL,
+  PLATFORM_LABEL,
   STATUS_LABEL,
 } from "@/lib/dashboard/status-labels";
 
@@ -34,7 +35,8 @@ export interface LeadHistoryDTO {
 export interface LeadDetailDTO {
   id: string;
   externalId: string;
-  source: keyof typeof SOURCE_LABEL;
+  platform: Platform;
+  channel: Channel;
   status: LeadStatus;
   offerId: string | null;
   offerName: string | null;
@@ -237,7 +239,8 @@ export function LeadDrawer({
               <Row label="Oferta" value={detail.offerName} />
               <Row label="Offer ID (red)" value={detail.networkOfferId} />
               <Row label="Order ID (red)" value={detail.networkLeadId} />
-              <Row label="Source" value={SOURCE_LABEL[detail.source] ?? detail.source} />
+              <Row label="Plataforma" value={PLATFORM_LABEL[detail.platform]} />
+              <Row label="Canal" value={CHANNEL_LABEL[detail.channel]} />
               <Row label="Estado" value={STATUS_LABEL[detail.status]} />
               <Row label="Revenue" value={detail.revenueUsd != null ? `$${detail.revenueUsd}` : "—"} />
             </section>

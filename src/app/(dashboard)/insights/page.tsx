@@ -13,7 +13,7 @@ import {
 import { type Period, periodRange } from "@/lib/dashboard/dates";
 import { formatPct } from "@/lib/dashboard/metrics";
 import { type DimRow, getInsights, getOffersWithLeads } from "@/lib/dashboard/queries";
-import { SOURCE_LABEL } from "@/lib/dashboard/status-labels";
+import { CHANNEL_LABEL, PLATFORM_LABEL } from "@/lib/dashboard/status-labels";
 
 export const dynamic = "force-dynamic";
 
@@ -96,12 +96,20 @@ export default async function InsightsPage({
         </CardContent>
       </Card>
 
-      <DimTable
-        title="Por source"
-        rows={insights.sourceRows}
-        labelHeader="Source"
-        labelFn={(k) => SOURCE_LABEL[k as keyof typeof SOURCE_LABEL] ?? k}
-      />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DimTable
+          title="Por plataforma"
+          rows={insights.platformRows}
+          labelHeader="Plataforma"
+          labelFn={(k) => PLATFORM_LABEL[k as keyof typeof PLATFORM_LABEL] ?? k}
+        />
+        <DimTable
+          title="Por canal"
+          rows={insights.channelRows}
+          labelHeader="Canal"
+          labelFn={(k) => CHANNEL_LABEL[k as keyof typeof CHANNEL_LABEL] ?? k}
+        />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <DimTable title="Top ciudades (mín 20 leads)" rows={insights.cityTop} labelHeader="Ciudad" />

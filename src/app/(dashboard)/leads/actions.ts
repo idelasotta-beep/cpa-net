@@ -105,7 +105,8 @@ export async function createManualLead(
   await prisma.lead.create({
     data: {
       externalId: `MANUAL-${randomUUID()}`,
-      source: "manual",
+      platform: "manual",
+      channel: "manual",
       offerId: offer.id,
       status: "pending",
       customerName,

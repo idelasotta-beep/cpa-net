@@ -58,7 +58,7 @@ export const adcomboClient: OfferNetworkClient = {
         ip,
         ext_in_id: lead.id,
         subacc: lead.id, // clave de reconciliación
-        subacc4: lead.source,
+        subacc4: lead.channel, // canal de origen
       });
       // Adcombo tiene un solo param `address`: combinamos dirección + ciudad + región.
       const fullAddress = [lead.customerAddress, lead.customerCity, lead.customerRegion]

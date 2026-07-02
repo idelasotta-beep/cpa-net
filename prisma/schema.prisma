@@ -10,11 +10,19 @@ datasource db {
   provider = "postgresql"
 }
 
-// Origen del pedido (viene en order.created_via del webhook de EstrategiasIA).
-enum LeadSource {
-  shopify
-  whatsapp_ai
+// Plataforma por la que ENTRA el lead al sistema.
+enum Platform {
+  estrategias
+  pancake
   manual // creado a mano desde el dashboard
+}
+
+// Canal/medio de origen del lead (dentro de la plataforma).
+enum Channel {
+  shopify
+  whatsapp
+  webcake
+  manual
 }
 
 // Status canónico unificado del lead (cada red traduce su vocabulario a este enum).
@@ -80,10 +88,11 @@ model Offer {
 model Lead {
   id String @id @default(uuid()) @db.Uuid
 
-  externalId String     @map("external_id") // = order.number de EstrategiasIA
-  source     LeadSource
-  offerId    String?    @map("offer_id") @db.Uuid // nullable hasta resolver el mapeo de producto
-  offer      Offer?     @relation(fields: [offerId], references: [id])
+  externalId String   @map("external_id") // ID del pedido en la plataforma origen
+  platform   Platform // por dónde entra el lead (EstrategiasIA, Pancake, manual)
+  channel    Channel // canal/medio de origen (shopify, whatsapp, webcake, manual)
+  offerId    String?  @map("offer_id") @db.Uuid // nullable hasta resolver el mapeo de producto
+  offer      Offer?   @relation(fields: [offerId], references: [id])
 
   networkLeadId String?    @map("network_lead_id") // ID que devuelve la red al crear el lead
   status        LeadStatus @default(pending)
@@ -112,9 +121,10 @@ model Lead {
 
   statusHistory LeadStatusHistory[]
 
-  @@unique([externalId, source]) // idempotencia ante reintentos del webhook
+  @@unique([externalId, platform]) // idempotencia por plataforma
   @@index([status])
-  @@index([source])
+  @@index([platform])
+  @@index([channel])
   @@index([createdAt])
   @@index([offerId])
   @@index([customerCity])

@@ -1,4 +1,4 @@
-import type { LeadSource, LeadStatus } from "@prisma/client";
+import type { Channel, LeadStatus, Platform } from "@prisma/client";
 import Link from "next/link";
 import { LeadDrawer, type LeadDetailDTO } from "@/components/lead-drawer";
 import { ManualLeadDialog } from "@/components/manual-lead-dialog";
@@ -22,8 +22,9 @@ import {
   getOffersWithLeads,
 } from "@/lib/dashboard/queries";
 import {
+  CHANNEL_LABEL,
   ORDERED_STATUSES,
-  SOURCE_LABEL,
+  PLATFORM_LABEL,
   STATUS_LABEL,
 } from "@/lib/dashboard/status-labels";
 
@@ -45,7 +46,8 @@ async function toDetailDTO(id: string): Promise<LeadDetailDTO | null> {
   return {
     id: d.id,
     externalId: d.externalId,
-    source: d.source,
+    platform: d.platform,
+    channel: d.channel,
     status: d.status,
     offerId: d.offerId,
     offerName: d.offer?.name ?? null,
@@ -90,7 +92,8 @@ export default async function LeadsPage({
   const [result, offers, activeOffers, detail] = await Promise.all([
     getLeadsPage({
       status: sp.status ? [sp.status as LeadStatus] : undefined,
-      source: (sp.source as LeadSource) || undefined,
+      platform: (sp.platform as Platform) || undefined,
+      channel: (sp.channel as Channel) || undefined,
       offerId: sp.offerId || undefined,
       city: sp.city || undefined,
       search: sp.search || undefined,
@@ -131,11 +134,17 @@ export default async function LeadsPage({
             <option key={s} value={s}>{STATUS_LABEL[s]}</option>
           ))}
         </select>
-        <select name="source" defaultValue={sp.source ?? ""} className="rounded-md border bg-background px-2 py-1.5 text-sm">
-          <option value="">Todos los sources</option>
-          <option value="shopify">Shopify</option>
-          <option value="whatsapp_ai">WhatsApp</option>
-          <option value="manual">Manual</option>
+        <select name="platform" defaultValue={sp.platform ?? ""} className="rounded-md border bg-background px-2 py-1.5 text-sm">
+          <option value="">Toda plataforma</option>
+          {Object.entries(PLATFORM_LABEL).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+        <select name="channel" defaultValue={sp.channel ?? ""} className="rounded-md border bg-background px-2 py-1.5 text-sm">
+          <option value="">Todo canal</option>
+          {Object.entries(CHANNEL_LABEL).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
         </select>
         <select name="offerId" defaultValue={sp.offerId ?? ""} className="rounded-md border bg-background px-2 py-1.5 text-sm">
           <option value="">Todas las ofertas</option>
@@ -162,7 +171,7 @@ export default async function LeadsPage({
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>
-              <TableHead>Source</TableHead>
+              <TableHead>Origen</TableHead>
               <TableHead>Oferta</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Ciudad</TableHead>
@@ -181,7 +190,9 @@ export default async function LeadsPage({
               result.rows.map((l) => (
                 <TableRow key={l.id}>
                   <TableCell className="whitespace-nowrap text-xs">{formatSantiago(l.createdAt)}</TableCell>
-                  <TableCell>{SOURCE_LABEL[l.source]}</TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">
+                    {PLATFORM_LABEL[l.platform]} · {CHANNEL_LABEL[l.channel]}
+                  </TableCell>
                   <TableCell>{l.offer?.name ?? "—"}</TableCell>
                   <TableCell>
                     <Link href={`/leads?${buildQuery(sp, { lead: l.id })}`} className="font-medium hover:underline">

@@ -1,16 +1,21 @@
-import type { LeadSource, LeadStatus } from "@prisma/client";
+import type { Channel, LeadStatus, Platform } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/server";
 import { formatSantiago } from "@/lib/dashboard/dates";
 import { getLeadsForExport } from "@/lib/dashboard/queries";
-import { SOURCE_LABEL, STATUS_LABEL } from "@/lib/dashboard/status-labels";
+import {
+  CHANNEL_LABEL,
+  PLATFORM_LABEL,
+  STATUS_LABEL,
+} from "@/lib/dashboard/status-labels";
 
 export const runtime = "nodejs";
 
 const COLUMNS = [
   "Fecha",
   "External ID",
-  "Source",
+  "Plataforma",
+  "Canal",
   "Estado",
   "Oferta",
   "Offer ID red",
@@ -40,7 +45,8 @@ export async function GET(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams;
   const leads = await getLeadsForExport({
     status: sp.get("status") ? [sp.get("status") as LeadStatus] : undefined,
-    source: (sp.get("source") as LeadSource) || undefined,
+    platform: (sp.get("platform") as Platform) || undefined,
+    channel: (sp.get("channel") as Channel) || undefined,
     offerId: sp.get("offerId") || undefined,
     city: sp.get("city") || undefined,
     search: sp.get("search") || undefined,
@@ -50,7 +56,8 @@ export async function GET(req: Request): Promise<Response> {
     [
       formatSantiago(l.createdAt),
       l.externalId,
-      SOURCE_LABEL[l.source] ?? l.source,
+      PLATFORM_LABEL[l.platform],
+      CHANNEL_LABEL[l.channel],
       STATUS_LABEL[l.status],
       l.offer?.name ?? "",
       l.offer?.networkOfferId ?? "",

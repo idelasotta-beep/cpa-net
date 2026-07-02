@@ -1,4 +1,4 @@
-import { LeadSource } from "@prisma/client";
+import { Channel, Platform } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import { mapWebhookPayload, PayloadMappingError } from "@/lib/leads/map-payload";
 import { webhookPayloadSchema } from "@/lib/leads/webhook-schema";
@@ -40,7 +40,8 @@ describe("mapWebhookPayload", () => {
     const m = mapWebhookPayload(parse(base));
     expect(m).toMatchObject({
       externalId: "ORD-0002",
-      source: LeadSource.shopify,
+      platform: Platform.estrategias,
+      channel: Channel.shopify,
       platformProductId: "56579",
       customerName: "Test 5 Prueba",
       customerPhone: "+56992498360",
@@ -53,11 +54,12 @@ describe("mapWebhookPayload", () => {
     });
   });
 
-  it("mapea created_via 'whatsapp_ai' al source correcto", () => {
+  it("mapea created_via 'whatsapp_ai' al canal whatsapp", () => {
     const m = mapWebhookPayload(
       parse({ ...base, order: { ...base.order, created_via: "whatsapp_ai" } }),
     );
-    expect(m.source).toBe(LeadSource.whatsapp_ai);
+    expect(m.platform).toBe(Platform.estrategias);
+    expect(m.channel).toBe(Channel.whatsapp);
   });
 
   it("lanza PayloadMappingError ante created_via desconocido", () => {

@@ -79,7 +79,8 @@ describe("POST /api/leads/webhook", () => {
     const arg = prismaMock.lead.create.mock.calls[0]![0];
     expect(arg.data).toMatchObject({
       externalId: "ORD-0002",
-      source: "shopify",
+      platform: "estrategias",
+      channel: "shopify",
       offerId: "offer-1",
       customerName: "Test 5 Prueba",
     });

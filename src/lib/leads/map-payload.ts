@@ -1,4 +1,4 @@
-import { LeadSource } from "@prisma/client";
+import { Channel, Platform } from "@prisma/client";
 import type { WebhookPayload } from "./webhook-schema";
 
 /**
@@ -15,17 +15,18 @@ export class PayloadMappingError extends Error {
   }
 }
 
-/** Mapea order.created_via al enum canónico LeadSource. */
-function mapSource(createdVia: string): LeadSource {
+/** Mapea order.created_via de EstrategiasIA al canal canónico. */
+function mapChannel(createdVia: string): Channel {
   switch (createdVia.trim().toLowerCase()) {
     case "shopify":
-      return LeadSource.shopify;
+      return Channel.shopify;
     case "whatsapp_ai":
-      return LeadSource.whatsapp_ai;
+    case "whatsapp":
+      return Channel.whatsapp;
     default:
       throw new PayloadMappingError(
         `created_via desconocido: "${createdVia}"`,
-        "unknown_source",
+        "unknown_channel",
       );
   }
 }
@@ -38,7 +39,8 @@ function emptyToNull(v: string | undefined | null): string | null {
 
 export interface MappedLead {
   externalId: string;
-  source: LeadSource;
+  platform: Platform;
+  channel: Channel;
   /** clave para resolver la oferta (= items[0].dropi_product_id), puede ser null */
   platformProductId: string | null;
   customerName: string;
@@ -70,7 +72,8 @@ export function mapWebhookPayload(payload: WebhookPayload): MappedLead {
 
   return {
     externalId: order.number,
-    source: mapSource(order.created_via),
+    platform: Platform.estrategias,
+    channel: mapChannel(order.created_via),
     platformProductId: firstItem?.dropi_product_id ?? null,
     customerName: fullName,
     customerPhone: order.customer.phone.trim(),

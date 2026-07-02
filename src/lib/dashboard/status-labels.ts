@@ -1,4 +1,4 @@
-import type { LeadSource, LeadStatus } from "@prisma/client";
+import type { Channel, LeadStatus, Platform } from "@prisma/client";
 
 export const STATUS_LABEL: Record<LeadStatus, string> = {
   pending: "Pendiente",
@@ -30,9 +30,16 @@ export const STATUS_BADGE_CLASS: Record<LeadStatus, string> = {
   failed: "bg-red-200 text-red-900",
 };
 
-export const SOURCE_LABEL: Record<LeadSource, string> = {
+export const PLATFORM_LABEL: Record<Platform, string> = {
+  estrategias: "EstrategiasIA",
+  pancake: "Pancake",
+  manual: "Manual",
+};
+
+export const CHANNEL_LABEL: Record<Channel, string> = {
   shopify: "Shopify",
-  whatsapp_ai: "WhatsApp",
+  whatsapp: "WhatsApp",
+  webcake: "Webcake",
   manual: "Manual",
 };
 
