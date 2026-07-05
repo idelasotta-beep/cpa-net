@@ -348,6 +348,30 @@ export async function getNetworks() {
   });
 }
 
+/** Ofertas de una red (para la administración). Con búsqueda opcional. */
+export async function getOffersByNetwork(
+  networkId: string,
+  search?: string,
+  limit = 50,
+) {
+  return prisma.offer.findMany({
+    where: {
+      networkId,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { networkOfferId: { contains: search } },
+              { platformProductId: { contains: search } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: { name: "asc" },
+    take: limit,
+  });
+}
+
 /** Ofertas activas (todas las redes) para el select de creación manual de lead. */
 export async function getActiveOffers() {
   return prisma.offer.findMany({

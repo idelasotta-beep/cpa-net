@@ -15,6 +15,13 @@ export interface CreateOrderResult {
   /** La red reporta que ya existía una orden con ese teléfono. */
   isDouble?: boolean;
   error?: string;
+  /**
+   * Rechazo TERMINAL reportado por la red al crear (teléfono inválido, blacklist,
+   * duplicado). No se reintenta: el lead pasa directo a este estado canónico.
+   */
+  terminalStatus?: CanonicalStatus;
+  /** Nota para el historial (motivo del rechazo terminal). */
+  note?: string;
 }
 
 export interface NetworkStatusResult {

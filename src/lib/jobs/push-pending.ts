@@ -14,6 +14,7 @@ export interface PushPendingResult {
   processed: number;
   ok: number;
   failed: number;
+  rejected: number;
   skipped: number;
 }
 
@@ -37,6 +38,7 @@ export async function runPushPending(): Promise<PushPendingResult> {
 
   let ok = 0;
   let failed = 0;
+  let rejected = 0;
   let skipped = 0;
 
   for (const lead of leads) {
@@ -80,6 +82,26 @@ export async function runPushPending(): Promise<PushPendingResult> {
         { leadId: lead.id, phone: maskPhone(lead.customerPhone), networkLeadId: result.networkLeadId },
         "lead enviado",
       );
+    } else if (result.terminalStatus) {
+      // La red rechazó el lead al crear (dato inválido/duplicado): estado terminal, sin reintento.
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: {
+          status: result.terminalStatus,
+          pushAttempts: newAttempts,
+          lastStatusChangeAt: new Date(),
+          statusHistory: {
+            create: {
+              oldStatus: "pending",
+              newStatus: result.terminalStatus,
+              source: "system",
+              note: `rechazado por la red: ${result.note ?? ""}`.slice(0, 500),
+            },
+          },
+        },
+      });
+      rejected++;
+      log.info({ leadId: lead.id, terminalStatus: result.terminalStatus, note: result.note }, "lead rechazado por la red");
     } else {
       const isFailed = newAttempts >= env.MAX_PUSH_ATTEMPTS;
       await prisma.lead.update({
@@ -110,7 +132,7 @@ export async function runPushPending(): Promise<PushPendingResult> {
     await sleep(DELAY_MS);
   }
 
-  log.info({ processed: leads.length, ok, failed, skipped }, "push-pending terminado");
+  log.info({ processed: leads.length, ok, failed, rejected, skipped }, "push-pending terminado");
 
   if (failed > 0) {
     await sendAlert(
@@ -119,5 +141,5 @@ export async function runPushPending(): Promise<PushPendingResult> {
     );
   }
 
-  return { processed: leads.length, ok, failed, skipped };
+  return { processed: leads.length, ok, failed, rejected, skipped };
 }

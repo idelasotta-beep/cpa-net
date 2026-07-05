@@ -1,8 +1,12 @@
-import type { Lead } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { getNetworkClient } from "@/lib/networks/registry";
 import { sendAlert } from "@/lib/notify";
+
+type LeadWithOffer = Prisma.LeadGetPayload<{
+  include: { offer: { include: { network: true } } };
+}>;
 
 const log = logger.child({ job: "poll-status" });
 const BATCH = 500; // límite de la status API de Adcombo por request
@@ -29,7 +33,7 @@ export async function runPollStatus(): Promise<PollStatusResult> {
   });
 
   const byNetwork = new Map<string, string[]>(); // slug -> networkLeadIds
-  const byNetworkLeadId = new Map<string, Lead[]>();
+  const byNetworkLeadId = new Map<string, LeadWithOffer[]>();
   for (const lead of leads) {
     const slug = lead.offer?.network.slug;
     if (!slug || !lead.networkLeadId) continue;
@@ -56,13 +60,16 @@ export async function runPollStatus(): Promise<PollStatusResult> {
       const matched = byNetworkLeadId.get(r.networkLeadId) ?? [];
       for (const lead of matched) {
         if (lead.status === r.status) continue;
+        // Revenue: si la red no lo devuelve (ej. Latinleads), usar el payout de la oferta.
+        const revenue =
+          r.revenueUsd ?? (lead.offer ? Number(lead.offer.payoutUsd) : undefined);
         await prisma.lead.update({
           where: { id: lead.id },
           data: {
             status: r.status,
             lastStatusChangeAt: new Date(),
-            ...(r.status === "lead" && r.revenueUsd != null
-              ? { revenueUsd: r.revenueUsd }
+            ...(r.status === "lead" && revenue != null
+              ? { revenueUsd: revenue }
               : {}),
             statusHistory: {
               create: {
@@ -77,7 +84,7 @@ export async function runPollStatus(): Promise<PollStatusResult> {
         updated++;
         if (r.status === "lead") {
           confirmed++;
-          confirmedRevenue += r.revenueUsd ?? 0;
+          confirmedRevenue += revenue ?? 0;
         }
       }
     }

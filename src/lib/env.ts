@@ -32,6 +32,11 @@ const envSchema = z.object({
   ADCOMBO_DEFAULT_BASE_URL: z.string().optional().default(""),
   ADCOMBO_DEFAULT_REFERRER: z.string().optional().default(""),
 
+  // ── Latinleads (red CPA vía IGALFER) ──
+  LATINLEADS_API_KEY: z.string().optional().default(""),
+  LATINLEADS_API_BASE_URL: z.string().url().default("https://igalfer.com"),
+  LATINLEADS_PUBLISHER_ID: z.string().optional().default(""),
+
   // Auth de los endpoints de jobs/admin (Bearer). Railway no lo inyecta solo.
   CRON_SECRET: z.string().optional().default(""),
 

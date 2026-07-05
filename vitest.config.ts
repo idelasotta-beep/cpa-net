@@ -11,6 +11,7 @@ export default defineConfig({
       DATABASE_URL: "postgresql://test:test@localhost:5432/test",
       PLATFORM_WEBHOOK_SECRET: "test-secret",
       ADCOMBO_API_KEY: "test-adcombo-key",
+      LATINLEADS_API_KEY: "test-latinleads-key",
       CRON_SECRET: "test-cron-secret",
       SESSION_SECRET: "test-session-secret",
       LOG_LEVEL: "silent",
