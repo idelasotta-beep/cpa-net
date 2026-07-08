@@ -95,6 +95,24 @@ export function santiagoWeekday(date: Date): number {
   return new Date(Date.UTC(+m.year!, +m.month! - 1, +m.day!)).getUTCDay();
 }
 
+/** Clave de mes local "YYYY-MM". */
+export function santiagoMonthKey(date: Date): string {
+  const m = partsInTz(date);
+  return `${m.year}-${m.month}`;
+}
+
+/** Clave de semana local = el lunes de esa semana, "YYYY-MM-DD". */
+export function santiagoWeekKey(date: Date): string {
+  const m = partsInTz(date);
+  const base = new Date(Date.UTC(+m.year!, +m.month! - 1, +m.day!));
+  const offsetToMonday = (base.getUTCDay() + 6) % 7; // días desde el lunes
+  base.setUTCDate(base.getUTCDate() - offsetToMonday);
+  const yy = base.getUTCFullYear();
+  const mm = String(base.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(base.getUTCDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
 /** Clave "YYYY-MM-DD" (Santiago) del día anterior. */
 export function yesterdayKey(now = new Date()): string {
   const { y, mo, d } = santiagoToday(now);

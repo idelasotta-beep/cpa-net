@@ -1,6 +1,12 @@
 import type { Channel, LeadStatus, Platform, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { santiagoDayKey, santiagoHour, santiagoWeekday } from "./dates";
+import {
+  santiagoDayKey,
+  santiagoHour,
+  santiagoMonthKey,
+  santiagoWeekday,
+  santiagoWeekKey,
+} from "./dates";
 import {
   approvalRate,
   type StatusCounts,
@@ -9,6 +15,7 @@ import {
   profit,
   qualityApprovalRate,
   roi,
+  totalLeads,
 } from "./metrics";
 
 function dec(v: Prisma.Decimal | number | null | undefined): number {
@@ -172,6 +179,50 @@ export async function getOfferById(id: string) {
 export async function getOfferFunnel(offerId: string, from: Date, to: Date) {
   const leads = await fetchLeads({ offerId, createdAt: { gte: from, lte: to } });
   return countByStatus(leads);
+}
+
+export type Bucket = "day" | "week" | "month";
+
+export interface TimeBucketRow {
+  bucket: string;
+  total: number;
+  processed: number;
+  approval: number;
+  quality: number;
+}
+
+/** Approval y quality de una oferta agrupados por día / semana / mes. */
+export async function getOfferApprovalOverTime(
+  offerId: string,
+  from: Date,
+  to: Date,
+  bucket: Bucket,
+): Promise<TimeBucketRow[]> {
+  const leads = await fetchLeads({ offerId, createdAt: { gte: from, lte: to } });
+  const keyOf =
+    bucket === "month"
+      ? santiagoMonthKey
+      : bucket === "week"
+        ? santiagoWeekKey
+        : santiagoDayKey;
+
+  const groups = new Map<string, StatusCounts>();
+  for (const l of leads) {
+    const k = keyOf(l.createdAt);
+    const c = groups.get(k) ?? emptyCounts();
+    c[l.status]++;
+    groups.set(k, c);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([b, c]) => ({
+      bucket: b,
+      total: totalLeads(c),
+      processed: processedLeads(c),
+      approval: approvalRate(c),
+      quality: qualityApprovalRate(c),
+    }));
 }
 
 // ── Vista 3: Insights ──
