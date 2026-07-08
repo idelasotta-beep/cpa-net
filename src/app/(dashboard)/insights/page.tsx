@@ -111,6 +111,12 @@ export default async function InsightsPage({
         />
       </div>
 
+      <DimTable
+        title="Por dirección (approval con/sin dirección cargada)"
+        rows={insights.addressRows}
+        labelHeader="Dirección"
+      />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <DimTable title="Top ciudades (mín 20 leads)" rows={insights.cityTop} labelHeader="Ciudad" />
         <DimTable title="Bottom ciudades (mín 20 leads)" rows={insights.cityBottom} labelHeader="Ciudad" />

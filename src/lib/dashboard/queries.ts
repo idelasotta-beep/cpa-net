@@ -20,6 +20,7 @@ interface LeadLite {
   revenueUsd: Prisma.Decimal | null;
   offerId: string | null;
   createdAt: Date;
+  customerAddress: string | null;
   customerCity: string | null;
   platform: Platform;
   channel: Channel;
@@ -34,6 +35,7 @@ async function fetchLeads(where: Prisma.LeadWhereInput): Promise<LeadLite[]> {
       revenueUsd: true,
       offerId: true,
       createdAt: true,
+      customerAddress: true,
       customerCity: true,
       platform: true,
       channel: true,
@@ -223,6 +225,11 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
     (a, b) => b.total - a.total,
   );
 
+  // Por completitud de dirección (con/sin la calle).
+  const addressRows = aggregateBy(leads, (l) =>
+    l.customerAddress && l.customerAddress.trim() ? "Con dirección" : "Sin dirección",
+  ).sort((a, b) => a.key.localeCompare(b.key));
+
   // Por campaña.
   const campaignRows = aggregateBy(leads, (l) => l.utmCampaign)
     .sort((a, b) => b.approval - a.approval)
@@ -247,7 +254,7 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
     });
   }
 
-  return { cityTop, cityBottom, platformRows, channelRows, campaignRows, heatmap, totalLeads: leads.length };
+  return { cityTop, cityBottom, platformRows, channelRows, addressRows, campaignRows, heatmap, totalLeads: leads.length };
 }
 
 // ── Vista 4: Leads ──
