@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/app/login/actions";
+import { LeadSoundToggle } from "@/components/lead-notifications";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sheet,
@@ -97,14 +98,20 @@ export function Nav({ email }: { email: string }) {
           </Sheet>
           <span className="text-lg font-semibold">CPA Net</span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LeadSoundToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Sidebar desktop */}
       <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar p-4 md:flex">
         <div className="mb-6 flex items-center justify-between px-2">
           <span className="text-lg font-semibold">CPA Net</span>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <LeadSoundToggle />
+            <ThemeToggle />
+          </div>
         </div>
         <NavLinks pathname={pathname} />
         <Footer email={email} />

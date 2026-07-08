@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { LeadPing } from "@/components/lead-notifications";
 import { Nav } from "@/components/nav";
 import { getSession } from "@/lib/auth/server";
 
@@ -13,6 +14,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <Nav email={session.email} />
+      <LeadPing />
       <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
     </div>
   );
