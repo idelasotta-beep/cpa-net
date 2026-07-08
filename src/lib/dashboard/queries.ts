@@ -29,6 +29,7 @@ interface LeadLite {
   createdAt: Date;
   customerAddress: string | null;
   customerCity: string | null;
+  customerRegion: string | null;
   platform: Platform;
   channel: Channel;
   utmCampaign: string | null;
@@ -44,6 +45,7 @@ async function fetchLeads(where: Prisma.LeadWhereInput): Promise<LeadLite[]> {
       createdAt: true,
       customerAddress: true,
       customerCity: true,
+      customerRegion: true,
       platform: true,
       channel: true,
       utmCampaign: true,
@@ -236,6 +238,16 @@ export interface DimRow {
   quality: number;
 }
 
+export interface OfferInsightRow {
+  offerId: string;
+  name: string;
+  country: string;
+  total: number;
+  processed: number;
+  approval: number;
+  quality: number;
+}
+
 function aggregateBy(leads: LeadLite[], keyOf: (l: LeadLite) => string | null): DimRow[] {
   const groups = new Map<string, LeadLite[]>();
   for (const l of leads) {
@@ -267,6 +279,42 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
     .sort((a, b) => b.approval - a.approval);
   const cityTop = cityRows.slice(0, 20);
   const cityBottom = cityRows.slice(-20).reverse();
+
+  // Por región (todas, ordenadas por volumen).
+  const regionRows = aggregateBy(leads, (l) => l.customerRegion).sort(
+    (a, b) => b.total - a.total,
+  );
+
+  // Por oferta (approval/quality por oferta del período).
+  const byOffer = new Map<string, LeadLite[]>();
+  for (const l of leads) {
+    if (!l.offerId) continue;
+    (byOffer.get(l.offerId) ?? byOffer.set(l.offerId, []).get(l.offerId)!).push(l);
+  }
+  const insightOfferIds = [...byOffer.keys()];
+  const offerNames = insightOfferIds.length
+    ? await prisma.offer.findMany({
+        where: { id: { in: insightOfferIds } },
+        select: { id: true, name: true, country: true },
+      })
+    : [];
+  const nameMap = new Map(offerNames.map((o) => [o.id, o]));
+  const offerRows: OfferInsightRow[] = insightOfferIds
+    .map((oid) => {
+      const group = byOffer.get(oid)!;
+      const c = countByStatus(group);
+      const o = nameMap.get(oid);
+      return {
+        offerId: oid,
+        name: o?.name ?? oid,
+        country: o?.country ?? "",
+        total: group.length,
+        processed: processedLeads(c),
+        approval: approvalRate(c),
+        quality: qualityApprovalRate(c),
+      };
+    })
+    .sort((a, b) => b.total - a.total);
 
   // Por plataforma y por canal.
   const platformRows = aggregateBy(leads, (l) => l.platform).sort(
@@ -305,7 +353,7 @@ export async function getInsights(from: Date, to: Date, offerId?: string) {
     });
   }
 
-  return { cityTop, cityBottom, platformRows, channelRows, addressRows, campaignRows, heatmap, totalLeads: leads.length };
+  return { offerRows, cityTop, cityBottom, regionRows, platformRows, channelRows, addressRows, campaignRows, heatmap, totalLeads: leads.length };
 }
 
 // ── Vista 4: Leads ──

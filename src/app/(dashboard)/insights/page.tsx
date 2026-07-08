@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ApprovalHeatmap } from "@/components/charts/approval-heatmap";
 import { OfferFilter } from "@/components/offer-filter";
 import { PeriodSelector } from "@/components/period-selector";
@@ -77,6 +78,18 @@ export default async function InsightsPage({
     getOffersWithLeads(),
   ]);
 
+  const baseParams = new URLSearchParams({
+    period,
+    ...(sp.from ? { from: sp.from } : {}),
+    ...(sp.to ? { to: sp.to } : {}),
+  });
+  const baseQs = baseParams.toString();
+  const drillHref = (offerId: string) => {
+    const p = new URLSearchParams(baseQs);
+    p.set("offerId", offerId);
+    return `/insights?${p.toString()}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -86,6 +99,56 @@ export default async function InsightsPage({
           <PeriodSelector current={period} />
         </div>
       </div>
+
+      {/* Por oferta (con drill-down) */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Por oferta</CardTitle>
+          {sp.offerId ? (
+            <Link href={`/insights?${baseQs}`} className="text-xs underline">
+              ← Ver todas
+            </Link>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              Click en una oferta para desglosar todos los cortes
+            </span>
+          )}
+        </CardHeader>
+        <CardContent>
+          {insights.offerRows.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">Sin datos</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border">
+              <Table className="min-w-[560px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Oferta</TableHead>
+                    <TableHead>País</TableHead>
+                    <TableHead className="text-right">Leads</TableHead>
+                    <TableHead className="text-right">Approval</TableHead>
+                    <TableHead className="text-right">Quality</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {insights.offerRows.map((o) => (
+                    <TableRow key={o.offerId}>
+                      <TableCell>
+                        <Link href={drillHref(o.offerId)} className="font-medium hover:underline">
+                          {o.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{o.country}</TableCell>
+                      <TableCell className="text-right">{o.total}</TableCell>
+                      <TableCell className="text-right">{formatPct(o.approval)}</TableCell>
+                      <TableCell className="text-right">{formatPct(o.quality)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -111,11 +174,14 @@ export default async function InsightsPage({
         />
       </div>
 
-      <DimTable
-        title="Por dirección (approval con/sin dirección cargada)"
-        rows={insights.addressRows}
-        labelHeader="Dirección"
-      />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DimTable title="Por región" rows={insights.regionRows} labelHeader="Región" />
+        <DimTable
+          title="Por dirección (con/sin dirección cargada)"
+          rows={insights.addressRows}
+          labelHeader="Dirección"
+        />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <DimTable title="Top ciudades (mín 20 leads)" rows={insights.cityTop} labelHeader="Ciudad" />
