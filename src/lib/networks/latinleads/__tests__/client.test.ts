@@ -53,7 +53,13 @@ describe("latinleadsClient.createOrder", () => {
   it("teléfono inválido: rechazo terminal trash", async () => {
     mockFetch({ status: "ok", is_valid: "0", is_wrongtelephone: "1" });
     const res = await latinleadsClient.createOrder(lead, offer);
-    expect(res).toMatchObject({ ok: false, terminalStatus: "trash" });
+    expect(res).toMatchObject({ ok: false, terminalStatus: "trash", note: "wrong_telephone" });
+  });
+
+  it("tolera flags como número (la API a veces devuelve 1 en vez de '1')", async () => {
+    mockFetch({ status: "ok", ext_id: "11588940", is_valid: 0, is_wrongtelephone: 1, is_duplicate: 0 });
+    const res = await latinleadsClient.createOrder(lead, offer);
+    expect(res).toMatchObject({ ok: false, terminalStatus: "trash", note: "wrong_telephone" });
   });
 
   it("server error: ok=false sin terminalStatus (reintenta)", async () => {

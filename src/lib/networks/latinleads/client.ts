@@ -38,6 +38,11 @@ function requireApiKey(): string {
   return env.LATINLEADS_API_KEY;
 }
 
+/** La API devuelve los flags como "1"/"0" o 1/0 → comparación tolerante. */
+function flagOn(v: string | number | undefined): boolean {
+  return String(v) === "1";
+}
+
 export const latinleadsClient: OfferNetworkClient = {
   slug: "latinleads",
 
@@ -69,18 +74,18 @@ export const latinleadsClient: OfferNetworkClient = {
         return { ok: false, error: data.error || "server error" };
       }
 
-      if (data.is_valid === "1" && data.ext_id != null) {
+      if (flagOn(data.is_valid) && data.ext_id != null) {
         return { ok: true, networkLeadId: String(data.ext_id) };
       }
 
       // Rechazo terminal: no reintentar.
-      if (data.is_duplicate === "1") {
+      if (flagOn(data.is_duplicate)) {
         return { ok: false, terminalStatus: "reject", note: "duplicate" };
       }
-      if (data.is_blacklist === "1") {
+      if (flagOn(data.is_blacklist)) {
         return { ok: false, terminalStatus: "trash", note: "blacklist" };
       }
-      if (data.is_wrongtelephone === "1") {
+      if (flagOn(data.is_wrongtelephone)) {
         return { ok: false, terminalStatus: "trash", note: "wrong_telephone" };
       }
       return { ok: false, terminalStatus: "trash", note: "rejected (is_valid=0)" };
