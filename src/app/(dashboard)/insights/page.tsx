@@ -43,8 +43,8 @@ function DimTable({
               <TableRow>
                 <TableHead>{labelHeader}</TableHead>
                 <TableHead className="text-right">Leads</TableHead>
-                <TableHead className="text-right">Approval</TableHead>
-                <TableHead className="text-right">Quality</TableHead>
+                <TableHead className="text-right">Approval sin Trash</TableHead>
+                <TableHead className="text-right">Approval con Trash</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,8 +125,8 @@ export default async function InsightsPage({
                     <TableHead>Oferta</TableHead>
                     <TableHead>País</TableHead>
                     <TableHead className="text-right">Leads</TableHead>
-                    <TableHead className="text-right">Approval</TableHead>
-                    <TableHead className="text-right">Quality</TableHead>
+                    <TableHead className="text-right">Approval sin Trash</TableHead>
+                    <TableHead className="text-right">Approval con Trash</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -152,7 +152,7 @@ export default async function InsightsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Approval rate por hora y día</CardTitle>
+          <CardTitle className="text-base">Approval sin Trash por hora y día</CardTitle>
         </CardHeader>
         <CardContent>
           <ApprovalHeatmap data={insights.heatmap} />

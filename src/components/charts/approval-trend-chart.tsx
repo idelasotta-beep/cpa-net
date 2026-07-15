@@ -36,8 +36,22 @@ export function ApprovalTrendChart({ data }: { data: TimeBucketRow[] }) {
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Line type="monotone" dataKey="Approval" stroke="#22c55e" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="Quality" stroke="#38bdf8" strokeWidth={2} dot={false} />
+          <Line
+            type="monotone"
+            dataKey="Approval"
+            name="Approval sin Trash"
+            stroke="#22c55e"
+            strokeWidth={2}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="Quality"
+            name="Approval con Trash"
+            stroke="#38bdf8"
+            strokeWidth={2}
+            dot={false}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

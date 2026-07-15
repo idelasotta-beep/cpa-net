@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   approvalRate,
+  cpaInitial,
+  cpaReal,
   emptyCounts,
+  formatCpa,
   profit,
   qualityApprovalRate,
   roi,
@@ -34,5 +37,20 @@ describe("metrics", () => {
     expect(profit(100, 30)).toBe(70);
     expect(roi(100, 25)).toBe(3);
     expect(roi(100, 0)).toBe(0); // sin costo => 0 (no Infinity)
+  });
+
+  it("cpaInitial = costo/leads totales; cpaReal = costo/leads aprobados", () => {
+    expect(cpaInitial(100, 50)).toBe(2); // 100 / 50 leads
+    expect(cpaReal(100, 10)).toBe(10); // 100 / 10 aprobados
+  });
+
+  it("cpa devuelve 0 si no hay leads en el denominador", () => {
+    expect(cpaInitial(100, 0)).toBe(0);
+    expect(cpaReal(100, 0)).toBe(0);
+  });
+
+  it("formatCpa: USD con base, '—' sin base", () => {
+    expect(formatCpa(100, 10)).toBe("$10.00");
+    expect(formatCpa(100, 0)).toBe("—");
   });
 });

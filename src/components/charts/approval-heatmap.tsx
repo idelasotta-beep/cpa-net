@@ -56,7 +56,7 @@ export function ApprovalHeatmap({ data }: { data: HeatCell[] }) {
         </tbody>
       </table>
       <p className="mt-2 text-xs text-muted-foreground">
-        Color = approval rate (más verde = mejor). Hora local Chile.
+        Color = Approval sin Trash (más verde = mejor). Hora local Chile.
       </p>
     </div>
   );

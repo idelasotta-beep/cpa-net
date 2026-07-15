@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { type Period, periodRange } from "@/lib/dashboard/dates";
-import { formatPct, formatUsd } from "@/lib/dashboard/metrics";
+import { formatCpa, formatPct, formatUsd } from "@/lib/dashboard/metrics";
 import {
   getLeadsPerDay,
   getOfferPerformance,
@@ -56,12 +56,22 @@ export default async function ResumenPage({
         <PeriodSelector current={period} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Kpi label="Leads totales" value={String(summary.total)} />
         <Kpi
-          label="Approval rate"
+          label="Approval sin Trash"
           value={formatPct(summary.approval)}
-          sub={`Quality: ${formatPct(summary.quality)}`}
+          sub={`Approval con Trash: ${formatPct(summary.quality)}`}
+        />
+        <Kpi
+          label="CPA Inicial"
+          value={formatCpa(summary.cost, summary.total)}
+          sub="Costo / leads totales"
+        />
+        <Kpi
+          label="CPA Real"
+          value={formatCpa(summary.cost, summary.counts.lead)}
+          sub="Costo / leads aprobados"
         />
         <Kpi label="Revenue confirmado" value={formatUsd(summary.revenue)} />
         <Kpi label="Costo del período" value={formatUsd(summary.cost)} />

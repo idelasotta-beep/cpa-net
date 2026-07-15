@@ -14,6 +14,7 @@ import {
 import { type Period, periodRange } from "@/lib/dashboard/dates";
 import {
   approvalRate,
+  formatCpa,
   formatPct,
   qualityApprovalRate,
   totalLeads,
@@ -22,6 +23,7 @@ import {
   type Bucket,
   getOfferApprovalOverTime,
   getOfferById,
+  getOfferCost,
   getOfferFunnel,
 } from "@/lib/dashboard/queries";
 import { ORDERED_STATUSES, STATUS_COLOR, STATUS_LABEL } from "@/lib/dashboard/status-labels";
@@ -45,9 +47,10 @@ export default async function OfferDetailPage({
   const offer = await getOfferById(id);
   if (!offer) notFound();
 
-  const [counts, series] = await Promise.all([
+  const [counts, series, cost] = await Promise.all([
     getOfferFunnel(id, from, to),
     getOfferApprovalOverTime(id, from, to, bucket),
+    getOfferCost(from, to, id),
   ]);
   const total = totalLeads(counts);
 
@@ -77,18 +80,30 @@ export default async function OfferDetailPage({
         <PeriodSelector current={period} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs text-muted-foreground">Approval rate</CardTitle>
+            <CardTitle className="text-xs text-muted-foreground">Approval sin Trash</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{formatPct(approvalRate(counts))}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs text-muted-foreground">Quality approval</CardTitle>
+            <CardTitle className="text-xs text-muted-foreground">Approval con Trash</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{formatPct(qualityApprovalRate(counts))}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-muted-foreground">CPA Inicial</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{formatCpa(cost, total)}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-muted-foreground">CPA Real</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl font-semibold">{formatCpa(cost, counts.lead)}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -126,8 +141,8 @@ export default async function OfferDetailPage({
                     <TableHead>Período</TableHead>
                     <TableHead className="text-right">Leads</TableHead>
                     <TableHead className="text-right">Procesados</TableHead>
-                    <TableHead className="text-right">Approval</TableHead>
-                    <TableHead className="text-right">Quality</TableHead>
+                    <TableHead className="text-right">Approval sin Trash</TableHead>
+                    <TableHead className="text-right">Approval con Trash</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

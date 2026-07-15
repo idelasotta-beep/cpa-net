@@ -115,11 +115,17 @@ export interface OfferRow {
   country: string;
   total: number;
   sent: number;
+  approved: number;
   approval: number;
   revenue: number;
   cost: number;
   profit: number;
   profitPerLead: number;
+}
+
+/** Costo total (USD) de una oferta en el rango. */
+export async function getOfferCost(from: Date, to: Date, offerId: string): Promise<number> {
+  return costInRange(from, to, offerId);
 }
 
 export async function getOfferPerformance(from: Date, to: Date): Promise<OfferRow[]> {
@@ -163,6 +169,7 @@ export async function getOfferPerformance(from: Date, to: Date): Promise<OfferRo
       country: o?.country ?? "",
       total,
       sent,
+      approved: counts.lead,
       approval: approvalRate(counts),
       revenue,
       cost,

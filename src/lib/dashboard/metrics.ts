@@ -31,6 +31,21 @@ export function profit(revenueUsd: number, costUsd: number): number {
   return revenueUsd - costUsd;
 }
 
+/** CPA inicial = costo / leads totales (cuánto cuesta cada lead generado). */
+export function cpaInitial(costUsd: number, totalLeads: number): number {
+  return totalLeads === 0 ? 0 : costUsd / totalLeads;
+}
+
+/** CPA real = costo / leads aprobados (cuánto cuesta cada conversión pagada). */
+export function cpaReal(costUsd: number, approvedLeads: number): number {
+  return approvedLeads === 0 ? 0 : costUsd / approvedLeads;
+}
+
+/** Formatea una CPA en USD; "—" si no hay base (denominador 0). */
+export function formatCpa(costUsd: number, denom: number): string {
+  return denom === 0 ? "—" : formatUsd(costUsd / denom);
+}
+
 /** ROI = (revenue − cost) / cost. 0 si no hay costo. */
 export function roi(revenueUsd: number, costUsd: number): number {
   return costUsd === 0 ? 0 : (revenueUsd - costUsd) / costUsd;

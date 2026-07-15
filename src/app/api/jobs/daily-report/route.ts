@@ -7,7 +7,7 @@ import {
   santiagoHour,
   yesterdayKey,
 } from "@/lib/dashboard/dates";
-import { formatPct, formatUsd } from "@/lib/dashboard/metrics";
+import { formatCpa, formatPct, formatUsd } from "@/lib/dashboard/metrics";
 import { getAppSettings, getSummary } from "@/lib/dashboard/queries";
 import { logger } from "@/lib/logger";
 import { sendAlert } from "@/lib/notify";
@@ -47,7 +47,8 @@ export async function GET(req: Request): Promise<Response> {
       `🟢 Aprobados: ${c.lead} · 🔴 Rechazados: ${c.reject} · 🟡 Hold: ${c.hold} · 🗑 Trash: ${c.trash}`,
       `Pendientes: ${c.pending} · Enviados: ${c.sent_to_network} · Fallidos: ${c.failed}`,
       "",
-      `Approval: ${formatPct(s.approval)} (quality ${formatPct(s.quality)})`,
+      `Approval sin Trash: ${formatPct(s.approval)} · Approval con Trash: ${formatPct(s.quality)}`,
+      `CPA Inicial: ${formatCpa(s.cost, s.total)} · CPA Real: ${formatCpa(s.cost, c.lead)}`,
       `💵 Revenue: ${formatUsd(s.revenue)} · Costo: ${formatUsd(s.cost)}`,
       `📈 Profit: ${formatUsd(s.profit)} · ROI: ${s.cost === 0 ? "—" : formatPct(s.roi)}`,
     ].join("\n");

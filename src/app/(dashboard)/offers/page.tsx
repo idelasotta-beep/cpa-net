@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { type Period, periodRange } from "@/lib/dashboard/dates";
-import { formatPct, formatUsd } from "@/lib/dashboard/metrics";
+import { formatCpa, formatPct, formatUsd } from "@/lib/dashboard/metrics";
 import { getOfferPerformance } from "@/lib/dashboard/queries";
 
 export const dynamic = "force-dynamic";
@@ -37,14 +37,16 @@ export default async function OffersPage({
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
-          <Table className="min-w-[760px]">
+          <Table className="min-w-[920px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Oferta</TableHead>
                 <TableHead>País</TableHead>
                 <TableHead className="text-right">Leads</TableHead>
                 <TableHead className="text-right">Enviados</TableHead>
-                <TableHead className="text-right">Approval</TableHead>
+                <TableHead className="text-right">Approval sin Trash</TableHead>
+                <TableHead className="text-right">CPA Inicial</TableHead>
+                <TableHead className="text-right">CPA Real</TableHead>
                 <TableHead className="text-right">Revenue</TableHead>
                 <TableHead className="text-right">Costo</TableHead>
                 <TableHead className="text-right">Profit</TableHead>
@@ -66,6 +68,8 @@ export default async function OffersPage({
                   <TableCell className="text-right">{o.total}</TableCell>
                   <TableCell className="text-right">{o.sent}</TableCell>
                   <TableCell className="text-right">{formatPct(o.approval)}</TableCell>
+                  <TableCell className="text-right">{formatCpa(o.cost, o.total)}</TableCell>
+                  <TableCell className="text-right">{formatCpa(o.cost, o.approved)}</TableCell>
                   <TableCell className="text-right">{formatUsd(o.revenue)}</TableCell>
                   <TableCell className="text-right">{formatUsd(o.cost)}</TableCell>
                   <TableCell className="text-right font-medium">{formatUsd(o.profit)}</TableCell>
