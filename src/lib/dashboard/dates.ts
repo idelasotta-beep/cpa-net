@@ -5,7 +5,14 @@
 
 const TZ = "America/Santiago";
 
-export type Period = "today" | "7d" | "30d" | "custom";
+export type Period =
+  | "today"
+  | "yesterday"
+  | "7d"
+  | "30d"
+  | "this_month"
+  | "last_month"
+  | "custom";
 
 function partsInTz(date: Date): Record<string, string> {
   const dtf = new Intl.DateTimeFormat("en-CA", {
@@ -66,6 +73,30 @@ export function periodRange(
   const { y, mo, d } = santiagoToday(now);
   const todayStart = santiagoDayStartUtc(y, mo, d);
   if (period === "today") return { from: todayStart, to: now };
+
+  if (period === "yesterday") {
+    const yst = new Date(Date.UTC(y, mo - 1, d));
+    yst.setUTCDate(yst.getUTCDate() - 1);
+    const from = santiagoDayStartUtc(
+      yst.getUTCFullYear(),
+      yst.getUTCMonth() + 1,
+      yst.getUTCDate(),
+    );
+    return { from, to: todayStart };
+  }
+
+  if (period === "this_month") {
+    return { from: santiagoDayStartUtc(y, mo, 1), to: now };
+  }
+
+  if (period === "last_month") {
+    const lastY = mo === 1 ? y - 1 : y;
+    const lastMo = mo === 1 ? 12 : mo - 1;
+    return {
+      from: santiagoDayStartUtc(lastY, lastMo, 1),
+      to: santiagoDayStartUtc(y, mo, 1),
+    };
+  }
 
   const days = period === "30d" ? 29 : 6;
   const base = new Date(Date.UTC(y, mo - 1, d));

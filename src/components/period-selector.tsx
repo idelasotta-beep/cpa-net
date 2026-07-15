@@ -6,8 +6,11 @@ import { cn } from "@/lib/utils";
 
 const PRESETS = [
   { v: "today", l: "Hoy" },
+  { v: "yesterday", l: "Ayer" },
   { v: "7d", l: "7 días" },
   { v: "30d", l: "30 días" },
+  { v: "this_month", l: "Mes actual" },
+  { v: "last_month", l: "Mes pasado" },
 ];
 
 export function PeriodSelector({ current }: { current: string }) {
