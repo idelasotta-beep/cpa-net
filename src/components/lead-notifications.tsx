@@ -33,43 +33,48 @@ function setEnabled(v: boolean) {
   window.dispatchEvent(new Event(EVT));
 }
 
-/* ---- sonido tipo "cha-ching" sintetizado (sin archivos) ---- */
+/* ---- sonido "cha-ching" de Shopify (mp3 en /public/sounds) ---- */
 
-let audioCtx: AudioContext | null = null;
+const SOUND_URL = "/sounds/lead.mp3";
+let audioEl: HTMLAudioElement | null = null;
+let unlocked = false;
 
-function ensureCtx(): AudioContext | null {
+function getAudio(): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
-  const AC =
-    window.AudioContext ??
-    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AC) return null;
-  if (!audioCtx) audioCtx = new AC();
-  if (audioCtx.state === "suspended") void audioCtx.resume();
-  return audioCtx;
+  if (!audioEl) {
+    audioEl = new Audio(SOUND_URL);
+    audioEl.preload = "auto";
+    audioEl.volume = 0.7;
+  }
+  return audioEl;
 }
 
-function playChaChing() {
-  const ctx = ensureCtx();
-  if (!ctx) return;
-  const now = ctx.currentTime;
-  // Dos campanadas rápidas ascendentes (C6 -> G6), estilo caja registradora.
-  const notes = [
-    { f: 1046.5, t: 0 },
-    { f: 1568.0, t: 0.11 },
-  ];
-  for (const n of notes) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = n.f;
-    const start = now + n.t;
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.35, start + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(start);
-    osc.stop(start + 0.4);
-  }
+/** Desbloquea la reproducción tras el primer gesto (política autoplay). */
+function unlockAudio() {
+  const a = getAudio();
+  if (!a || unlocked) return;
+  a.muted = true;
+  a.play()
+    .then(() => {
+      a.pause();
+      a.currentTime = 0;
+      a.muted = false;
+      unlocked = true;
+    })
+    .catch(() => {
+      a.muted = false;
+    });
+}
+
+function playLeadSound() {
+  const a = getAudio();
+  if (!a) return;
+  a.currentTime = 0;
+  void a.play().then(() => {
+    unlocked = true;
+  }).catch(() => {
+    /* bloqueado hasta que haya interacción del usuario */
+  });
 }
 
 /* ---- botón de silenciar (va en el nav) ---- */
@@ -85,8 +90,7 @@ export function LeadSoundToggle({ className }: { className?: string }) {
         const next = !enabled;
         setEnabled(next);
         if (next) {
-          ensureCtx();
-          playChaChing(); // muestra cómo suena al activarlo
+          playLeadSound(); // muestra cómo suena al activarlo
         }
       }}
       className={cn(
@@ -106,7 +110,7 @@ export function LeadPing() {
 
   useEffect(() => {
     // Desbloquea el audio en el primer gesto del usuario (política autoplay).
-    const unlock = () => ensureCtx();
+    const unlock = () => unlockAudio();
     window.addEventListener("pointerdown", unlock, { once: true });
 
     let stopped = false;
@@ -121,7 +125,7 @@ export function LeadPing() {
         }
         if (count > last.current) {
           last.current = count;
-          if (isEnabled()) playChaChing();
+          if (isEnabled()) playLeadSound();
         } else if (count !== last.current) {
           last.current = count; // se borraron leads: reajusta sin sonar
         }
