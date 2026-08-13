@@ -14,6 +14,7 @@ export default defineConfig({
       ADCOMBO_API_KEY: "test-adcombo-key",
       LATINLEADS_API_KEY: "test-latinleads-key",
       ECOMLATAM_API_KEY: "test-ecomlatam-key",
+      ECOMLATAM_POSTBACK_TOKEN: "test-postback-token",
       CRON_SECRET: "test-cron-secret",
       SESSION_SECRET: "test-session-secret",
       LOG_LEVEL: "silent",
