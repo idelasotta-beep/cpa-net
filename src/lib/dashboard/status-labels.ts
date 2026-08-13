@@ -33,6 +33,7 @@ export const STATUS_BADGE_CLASS: Record<LeadStatus, string> = {
 export const PLATFORM_LABEL: Record<Platform, string> = {
   estrategias: "EstrategiasIA",
   pancake: "Pancake",
+  shopify: "Shopify",
   manual: "Manual",
 };
 

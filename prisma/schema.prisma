@@ -14,6 +14,7 @@ datasource db {
 enum Platform {
   estrategias
   pancake
+  shopify // pedido creado en una tienda Shopify (form COD de Releasit)
   manual // creado a mano desde el dashboard
 }
 
@@ -99,12 +100,26 @@ model Lead {
 
   customerName    String  @map("customer_name")
   customerPhone   String  @map("customer_phone")
-  customerAddress String? @map("customer_address")
+  customerEmail   String? @map("customer_email")
+  customerAddress String? @map("customer_address") // dirección legacy/compuesta (EstrategiasIA)
   customerCity    String? @map("customer_city")
-  customerRegion  String? @map("customer_region")
+  customerRegion  String? @map("customer_region") // texto de la provincia/estado tal cual entra
   customerCountry String  @map("customer_country")
 
-  clickId     String? @map("click_id") // sin uso actual (EstrategiasIA no lo provee)
+  // Dirección estructurada para fulfillment COD (EcomLatam exige estos campos).
+  customerStreet         String? @map("customer_street") // calle SIN número
+  customerStreetNumber   String? @map("customer_street_number") // número (o "S/N")
+  customerPostalCode     String? @map("customer_postal_code")
+  customerProvinceId     Int?    @map("customer_province_id") // ID de provincia AR (1-24) para EcomLatam
+  customerFloor          String? @map("customer_floor")
+  customerApartment      String? @map("customer_apartment")
+  customerBetweenStreets String? @map("customer_between_streets")
+  customerShippingNotes  String? @map("customer_shipping_notes")
+
+  // IP del comprador (capturada en la landing) — para EcomLatam y match del CAPI de Meta.
+  customerIp String? @map("customer_ip")
+
+  clickId     String? @map("click_id") // reconciliación / tracking (se envía a la red como subacc/clickId)
   utmSource   String? @map("utm_source")
   utmCampaign String? @map("utm_campaign")
   utmContent  String? @map("utm_content")
