@@ -23,6 +23,8 @@ export interface EcomlatamCreateResponse {
   trashReason?: string;
   validationErrors?: unknown;
   errors?: unknown;
+  // Errores de validación duros (4xx): [{ field, message, code }]
+  details?: Array<{ field?: string; message?: string; code?: string }>;
   lead?: { id?: string | number; status?: string; trashReason?: string };
   data?: { status?: string };
   [key: string]: unknown;

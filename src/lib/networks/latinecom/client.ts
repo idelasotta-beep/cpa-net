@@ -68,45 +68,54 @@ const nonEmpty = (v: unknown): boolean =>
  * Sondea las múltiples marcas que usa Latinecom (ver EcomlatamCreateResponse).
  */
 export function detectTrash(d: EcomlatamCreateResponse): string | null {
-  if (
+  const msg = typeof d.message === "string" ? d.message.trim() : "";
+  const statusStr = typeof d.status === "string" ? d.status.toLowerCase() : "";
+  const nested = d.lead?.status ?? d.data?.status;
+
+  const isTrash =
     truthy(d.autoTrash) ||
     truthy(d.autoTrashed) ||
     truthy(d.isTrash) ||
     truthy(d.isTrashed) ||
-    truthy(d.trashed)
-  ) {
-    return "autoTrash";
-  }
-
-  const statusStr = typeof d.status === "string" ? d.status.toLowerCase() : "";
-  if (statusStr === "trash" || statusStr === "trashed") return `status=${d.status}`;
-
-  const nested = d.lead?.status ?? d.data?.status;
-  if (typeof nested === "string" && nested.toLowerCase() === "trash") {
-    return "status anidado=trash";
-  }
-
-  if (nonEmpty(d.validationErrors)) return "validationErrors";
-  if (nonEmpty(d.errors)) return "errors";
-
-  const msg = typeof d.message === "string" ? d.message : "";
-  if (
-    /duplicate|already submitted|product item association failed|validation failed|lead duplicado|missing_note_attribute|invalid_/i.test(
+    truthy(d.trashed) ||
+    statusStr === "trash" ||
+    statusStr === "trashed" ||
+    (typeof nested === "string" && nested.toLowerCase() === "trash") ||
+    nonEmpty(d.validationErrors) ||
+    nonEmpty(d.errors) ||
+    /duplicate|already submitted|product item association failed|validation failed|lead duplicado|missing_note_attribute|invalid_|price_mismatch/i.test(
       msg,
-    )
-  ) {
-    return msg;
-  }
+    );
 
-  const reason = d.trashReason ?? d.lead?.trashReason ?? d.warning;
-  if (typeof reason === "string" && reason.trim()) return reason;
+  if (!isTrash) return null;
 
-  return null;
+  // Devolver el motivo MÁS INFORMATIVO (ej. "PRICE_MISMATCH: ...") para el historial.
+  return (
+    msg ||
+    (typeof d.trashReason === "string" ? d.trashReason : "") ||
+    (typeof d.lead?.trashReason === "string" ? d.lead.trashReason : "") ||
+    (typeof d.warning === "string" ? d.warning : "") ||
+    "autoTrash"
+  );
 }
 
 function extractNetworkLeadId(d: EcomlatamCreateResponse): string | null {
   const id = d.orderId ?? d.leadNumber ?? d.id ?? d.lead?.id;
   return id != null ? String(id) : null;
+}
+
+/** Formatea el array `details` de un VALIDATION_ERROR a "campo: mensaje; ...". */
+export function formatValidationDetails(d: EcomlatamCreateResponse): string | null {
+  const details = d.details;
+  if (!Array.isArray(details) || details.length === 0) return null;
+  return details
+    .map((x) => {
+      const field = x?.field ?? "";
+      const message = x?.message ?? "";
+      return field ? `${field}: ${message}` : message;
+    })
+    .filter(Boolean)
+    .join("; ");
 }
 
 export const latinecomClient: OfferNetworkClient = {
@@ -151,10 +160,11 @@ export const latinecomClient: OfferNetworkClient = {
         body.productPrice = Number(lead.totalPriceLocal);
       }
       if (lead.customerEmail) body.customerEmail = lead.customerEmail;
-      if (lead.customerFloor) body.customerFloor = lead.customerFloor;
-      if (lead.customerApartment) body.customerApartment = lead.customerApartment;
-      if (lead.customerBetweenStreets) body.customerBetweenStreets = lead.customerBetweenStreets;
-      if (lead.customerShippingNotes) body.customerShippingNotes = lead.customerShippingNotes;
+      // Truncar a los límites de Latinecom para evitar rechazos duros (VALIDATION_ERROR).
+      if (lead.customerFloor) body.customerFloor = lead.customerFloor.slice(0, 10);
+      if (lead.customerApartment) body.customerApartment = lead.customerApartment.slice(0, 10);
+      if (lead.customerBetweenStreets) body.customerBetweenStreets = lead.customerBetweenStreets.slice(0, 200);
+      if (lead.customerShippingNotes) body.customerShippingNotes = lead.customerShippingNotes.slice(0, 500);
       if (env.LATINECOM_PUBLISHER_ID) body.publisherId = env.LATINECOM_PUBLISHER_ID;
 
       const url = `${env.LATINECOM_API_BASE_URL}/api/external/orders`;
@@ -186,11 +196,18 @@ export const latinecomClient: OfferNetworkClient = {
         return { ok: false, error: "respuesta 2xx sin orderId/leadNumber ni marca de trash" };
       }
 
-      // 4xx/5xx: error transitorio o de request → se reintenta.
-      const errMsg =
+      // 4xx/5xx. Un VALIDATION_ERROR (dato inválido) es determinista: terminal,
+      // no reintentar, y con el detalle del campo para poder diagnosticarlo/corregirlo.
+      const details = formatValidationDetails(data);
+      const baseMsg =
         (typeof data.message === "string" && data.message) ||
         (typeof data.error === "string" && data.error) ||
         `HTTP ${res.status}`;
+      const errMsg = details ? `${baseMsg} — ${details}` : baseMsg;
+      if (data.error === "VALIDATION_ERROR" || details) {
+        return { ok: false, terminalStatus: "trash", note: errMsg.slice(0, 500) };
+      }
+      // Otros 4xx/5xx: error transitorio → se reintenta.
       return { ok: false, error: errMsg };
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);

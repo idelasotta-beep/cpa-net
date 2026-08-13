@@ -135,6 +135,46 @@ describe("latinecomClient.createOrder", () => {
     const res = await latinecomClient.createOrder(lead, offer);
     expect(res).toEqual({ ok: false, error: "server error" });
   });
+
+  it("trunca customerFloor a 10 chars (evita VALIDATION_ERROR)", async () => {
+    const fn = mockFetch({ orderId: 1 });
+    const leadFloorLargo = { ...lead, customerFloor: "Piso y timbre larguísimo" } as unknown as Lead;
+    await latinecomClient.createOrder(leadFloorLargo, offer);
+    const body = JSON.parse((fn.mock.calls[0]![1] as RequestInit).body as string);
+    expect(body.customerFloor).toBe("Piso y tim"); // 10 chars
+  });
+
+  it("VALIDATION_ERROR (4xx) => terminalStatus trash con el detalle del campo, sin reintentar", async () => {
+    mockFetch(
+      {
+        success: false,
+        error: "VALIDATION_ERROR",
+        message: "Invalid lead data provided",
+        details: [
+          { field: "customerFloor", message: "String must contain at most 10 character(s)", code: "too_big" },
+        ],
+      },
+      { ok: false, status: 400 },
+    );
+    const res = await latinecomClient.createOrder(lead, offer);
+    expect(res.ok).toBe(false);
+    expect(res.terminalStatus).toBe("trash");
+    expect(res.note).toContain("customerFloor");
+    expect(res.error).toBeUndefined();
+  });
+
+  it("PRICE_MISMATCH (200 + autoTrash) => terminalStatus trash", async () => {
+    mockFetch({
+      success: true,
+      autoTrash: true,
+      message: "PRICE_MISMATCH: For 1 unit(s), expected total price 57982 but received 21990",
+      orderId: 8054,
+    });
+    const res = await latinecomClient.createOrder(lead, offer);
+    expect(res.ok).toBe(false);
+    expect(res.terminalStatus).toBe("trash");
+    expect(res.note).toContain("PRICE_MISMATCH");
+  });
 });
 
 describe("latinecomClient postback-only", () => {
