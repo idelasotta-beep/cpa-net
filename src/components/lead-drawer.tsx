@@ -44,10 +44,22 @@ export interface LeadDetailDTO {
   networkLeadId: string | null;
   customerName: string;
   customerPhone: string;
+  customerEmail: string | null;
   customerAddress: string | null;
   customerCity: string | null;
   customerRegion: string | null;
   customerCountry: string;
+  customerStreet: string | null;
+  customerStreetNumber: string | null;
+  customerPostalCode: string | null;
+  customerProvinceId: number | null;
+  customerFloor: string | null;
+  customerApartment: string | null;
+  customerBetweenStreets: string | null;
+  customerShippingNotes: string | null;
+  customerIp: string | null;
+  quantity: number | null;
+  totalPriceLocal: number | null;
   revenueUsd: number | null;
   clickId: string | null;
   utmSource: string | null;
@@ -228,10 +240,40 @@ export function LeadDrawer({
             <section>
               <h3 className="mb-1 text-xs font-semibold uppercase text-muted-foreground">Cliente</h3>
               <Row label="Teléfono" value={detail.customerPhone} />
+              <Row label="Email" value={detail.customerEmail} />
               <Row label="Dirección" value={detail.customerAddress} />
               <Row label="Ciudad" value={detail.customerCity} />
               <Row label="Región" value={detail.customerRegion} />
               <Row label="País" value={detail.customerCountry} />
+            </section>
+
+            <section>
+              <h3 className="mb-1 text-xs font-semibold uppercase text-muted-foreground">
+                Envío estructurado (Latinecom)
+              </h3>
+              <Row label="Calle" value={detail.customerStreet} />
+              <Row label="Número" value={detail.customerStreetNumber} />
+              <Row
+                label="Province ID"
+                value={
+                  detail.customerProvinceId != null ? (
+                    `${detail.customerProvinceId}`
+                  ) : (
+                    <span className="text-destructive">— sin resolver</span>
+                  )
+                }
+              />
+              <Row label="Código postal" value={detail.customerPostalCode} />
+              <Row label="Piso y timbre" value={detail.customerFloor} />
+              <Row label="Depto" value={detail.customerApartment} />
+              <Row label="Entre calles" value={detail.customerBetweenStreets} />
+              <Row label="Notas de envío" value={detail.customerShippingNotes} />
+              <Row label="Cantidad (combo)" value={detail.quantity != null ? String(detail.quantity) : null} />
+              <Row
+                label="Total combo (local)"
+                value={detail.totalPriceLocal != null ? String(detail.totalPriceLocal) : null}
+              />
+              <Row label="IP" value={detail.customerIp} />
             </section>
 
             <section>
