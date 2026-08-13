@@ -10,6 +10,7 @@ export default defineConfig({
       NODE_ENV: "test",
       DATABASE_URL: "postgresql://test:test@localhost:5432/test",
       PLATFORM_WEBHOOK_SECRET: "test-secret",
+      SHOPIFY_WEBHOOK_SECRET: "test-shopify-secret",
       ADCOMBO_API_KEY: "test-adcombo-key",
       LATINLEADS_API_KEY: "test-latinleads-key",
       CRON_SECRET: "test-cron-secret",

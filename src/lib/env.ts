@@ -18,6 +18,14 @@ const envSchema = z.object({
   // Opcional: si está vacío, la verificación se omite (solo para dev local).
   PLATFORM_WEBHOOK_SECRET: z.string().optional().default(""),
 
+  // ── Ingesta Shopify (form COD de Releasit) ──
+  // Secreto de firma del webhook de Shopify (header X-Shopify-Hmac-Sha256, base64).
+  // Opcional: si está vacío, la verificación se omite (solo para dev local).
+  SHOPIFY_WEBHOOK_SECRET: z.string().optional().default(""),
+  // App id de Releasit en Shopify. Si está seteado, solo se ingieren las órdenes
+  // creadas por esa app (se descartan órdenes manuales/otras). Vacío = ingerir todas.
+  SHOPIFY_RELEASIT_APP_ID: z.string().optional().default(""),
+
   // ── Adcombo (Fase 2) ──
   ADCOMBO_API_KEY: z.string().optional().default(""),
   ADCOMBO_API_BASE_URL: z

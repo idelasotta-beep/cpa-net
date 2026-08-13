@@ -34,3 +34,30 @@ export function verifyEstrategasSignature(
 
   return timingSafeEqual(receivedBuf, expectedBuf);
 }
+
+/**
+ * Verifica la firma HMAC-SHA256 del webhook de Shopify.
+ *
+ * Shopify firma el RAW body y envía el digest en BASE64 en el header
+ * `X-Shopify-Hmac-Sha256` (a diferencia de EstrategiasIA, que usa hex).
+ *
+ * @param rawBody  cuerpo crudo del request (await req.text())
+ * @param signatureHeader  valor del header X-Shopify-Hmac-Sha256 (puede ser null)
+ * @param secret  SHOPIFY_WEBHOOK_SECRET
+ */
+export function verifyShopifyWebhook(
+  rawBody: string,
+  signatureHeader: string | null | undefined,
+  secret: string,
+): boolean {
+  if (!secret) return false;
+  if (!signatureHeader) return false;
+
+  const expected = createHmac("sha256", secret).update(rawBody, "utf8").digest("base64");
+
+  const receivedBuf = Buffer.from(signatureHeader, "base64");
+  const expectedBuf = Buffer.from(expected, "base64");
+  if (receivedBuf.length !== expectedBuf.length) return false;
+
+  return timingSafeEqual(receivedBuf, expectedBuf);
+}
