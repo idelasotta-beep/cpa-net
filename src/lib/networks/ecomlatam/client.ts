@@ -136,15 +136,20 @@ export const ecomlatamClient: OfferNetworkClient = {
         customerCity: lead.customerCity,
         customerPostalCode: lead.customerPostalCode,
         customerProvinceId: lead.customerProvinceId,
+        // Combo: cada producto se vende en combos de 1/2/3 con precio propio.
+        // quantity + productPrice (total del combo) deben ir juntos; el precio tiene
+        // que coincidir con el catálogo de EcomLatam (los precios de Shopify se
+        // configuran para matchear ese catálogo).
+        quantity: lead.quantity ?? 1,
         // Reconciliación con el postback + reporting.
         clickId: lead.id,
         subacc1: lead.id,
         subacc4: lead.channel,
-        // quantity default 1 y productPrice omitido a propósito: EcomLatam usa el
-        // precio de catálogo y así evitamos el rechazo por "price mismatch".
-        quantity: 1,
         customFields: { source: "cpa-net", channel: lead.channel },
       };
+      if (lead.totalPriceLocal != null) {
+        body.productPrice = Number(lead.totalPriceLocal);
+      }
       if (lead.customerEmail) body.customerEmail = lead.customerEmail;
       if (lead.customerFloor) body.customerFloor = lead.customerFloor;
       if (lead.customerApartment) body.customerApartment = lead.customerApartment;

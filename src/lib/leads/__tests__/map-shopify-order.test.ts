@@ -65,7 +65,20 @@ describe("mapShopifyOrder", () => {
       customerFloor: "Piso 3",
       customerBetweenStreets: "entre X e Y",
       customerIp: "2803:c600:d219:8139:3865:62a1:a7fd:bf8e",
+      quantity: 1,
+      totalPriceLocal: 21990,
     });
+  });
+
+  it("captura la cantidad y el total del combo (combo de 2)", () => {
+    const m = mapShopifyOrder(
+      baseOrder({
+        total_price: "39990.00",
+        line_items: [{ sku: "SKU-P90", quantity: 2, price: "19995.00" }],
+      }),
+    );
+    expect(m.quantity).toBe(2);
+    expect(m.totalPriceLocal).toBe(39990);
   });
 
   it("compone customerAddress legacy (calle + número)", () => {

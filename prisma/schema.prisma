@@ -119,6 +119,11 @@ model Lead {
   // IP del comprador (capturada en la landing) — para EcomLatam y match del CAPI de Meta.
   customerIp String? @map("customer_ip")
 
+  // Combo pedido: cantidad (1/2/3) y total local del combo (Shopify total_price).
+  // Se envían a EcomLatam como quantity + productPrice (cada combo tiene su precio).
+  quantity        Int?     @map("quantity")
+  totalPriceLocal Decimal? @map("total_price_local") @db.Decimal(12, 2)
+
   clickId     String? @map("click_id") // reconciliación / tracking (se envía a la red como subacc/clickId)
   utmSource   String? @map("utm_source")
   utmCampaign String? @map("utm_campaign")

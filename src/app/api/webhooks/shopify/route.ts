@@ -150,6 +150,8 @@ export async function POST(req: Request): Promise<Response> {
           customerBetweenStreets: mapped.customerBetweenStreets,
           customerShippingNotes: mapped.customerShippingNotes,
           customerIp: mapped.customerIp,
+          quantity: mapped.quantity,
+          totalPriceLocal: mapped.totalPriceLocal,
           rawPayload: json as Prisma.InputJsonValue, // JSON original (forensics)
           statusHistory: {
             create: {

@@ -84,6 +84,8 @@ describe("POST /api/webhooks/shopify", () => {
       customerStreetNumber: "2137",
       customerProvinceId: 9,
       customerIp: "2803:c600::1",
+      quantity: 1,
+      totalPriceLocal: 21990,
     });
   });
 

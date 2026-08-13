@@ -17,6 +17,8 @@ const lead = {
   customerApartment: null,
   customerBetweenStreets: "entre X e Y",
   customerShippingNotes: null,
+  quantity: 2,
+  totalPriceLocal: 39990,
 } as unknown as Lead;
 
 const offer = {
@@ -84,10 +86,9 @@ describe("ecomlatamClient.createOrder", () => {
       clickId: "lead-uuid-123",
       subacc1: "lead-uuid-123",
       subacc4: "shopify",
-      quantity: 1,
+      quantity: 2, // cantidad real del combo, no fija en 1
+      productPrice: 39990, // total del combo
     });
-    // productPrice se omite a propósito (evita rechazo por price mismatch).
-    expect(body.productPrice).toBeUndefined();
   });
 
   it("acepta leadNumber como networkLeadId", async () => {

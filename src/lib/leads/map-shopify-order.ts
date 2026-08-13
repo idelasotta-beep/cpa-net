@@ -42,6 +42,8 @@ export interface MappedShopifyLead {
   customerBetweenStreets: string | null;
   customerShippingNotes: string | null;
   customerIp: string | null;
+  quantity: number | null;
+  totalPriceLocal: number | null;
 }
 
 function clean(v: string | number | boolean | null | undefined): string | null {
@@ -99,6 +101,13 @@ export function mapShopifyOrder(order: ShopifyOrder): MappedShopifyLead {
   const customerAddress =
     [customerStreet, customerStreetNumber].filter(Boolean).join(" ") || null;
 
+  // Combo: cantidad del ítem y total de la orden (= precio del combo que vio el cliente).
+  const firstItem = order.line_items[0];
+  const qty = firstItem?.quantity;
+  const quantity = qty != null && Number.isFinite(qty) && qty > 0 ? Math.trunc(qty) : null;
+  const total = order.total_price != null ? Number(order.total_price) : NaN;
+  const totalPriceLocal = Number.isFinite(total) ? total : null;
+
   return {
     externalId: order.id,
     platform: Platform.shopify,
@@ -120,5 +129,7 @@ export function mapShopifyOrder(order: ShopifyOrder): MappedShopifyLead {
     customerBetweenStreets: note(NOTE.betweenStreets),
     customerShippingNotes: clean(order.note),
     customerIp: note(NOTE.ip),
+    quantity,
+    totalPriceLocal,
   };
 }
