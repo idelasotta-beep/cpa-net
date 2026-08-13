@@ -36,6 +36,8 @@ const envSchema = z.object({
     .string()
     .url()
     .default("https://api.adcombo.com/offer/info/"),
+  // Token secreto propio para validar los postbacks de Adcombo (van sin HMAC).
+  ADCOMBO_POSTBACK_TOKEN: z.string().optional().default(""),
   // Params opcionales del create (base_url conviene consultarlo con el AM).
   ADCOMBO_DEFAULT_BASE_URL: z.string().optional().default(""),
   ADCOMBO_DEFAULT_REFERRER: z.string().optional().default(""),
