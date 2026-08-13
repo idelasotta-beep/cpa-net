@@ -52,6 +52,13 @@ const envSchema = z.object({
   // Token secreto propio para validar los postbacks de EcomLatam (van sin HMAC).
   ECOMLATAM_POSTBACK_TOKEN: z.string().optional().default(""),
 
+  // ── Meta Conversions API (Purchase server-side en la aprobación del lead) ──
+  // Si falta pixel id o token, el evento se omite (no rompe el postback).
+  META_PIXEL_ID: z.string().optional().default(""),
+  META_CAPI_ACCESS_TOKEN: z.string().optional().default(""),
+  META_CAPI_TEST_EVENT_CODE: z.string().optional().default(""), // para el Test Events de Meta
+  META_CAPI_ACTION_SOURCE: z.string().optional().default("website"),
+
   // Auth de los endpoints de jobs/admin (Bearer). Railway no lo inyecta solo.
   CRON_SECRET: z.string().optional().default(""),
 

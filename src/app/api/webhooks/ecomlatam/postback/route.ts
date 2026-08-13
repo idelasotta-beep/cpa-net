@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { mapStatus } from "@/lib/networks/ecomlatam/client";
 import { logger } from "@/lib/logger";
+import { sendPurchaseEvent } from "@/lib/meta/capi";
 import { sendAlert } from "@/lib/notify";
 
 // crypto + DB → runtime Node.
@@ -109,6 +110,19 @@ export async function GET(req: Request): Promise<Response> {
     if (status === "lead") {
       const rev = revenue ? ` (+$${revenue.toFixed(2)} USD)` : "";
       await sendAlert("💰 Venta confirmada", `1 venta confirmada por EcomLatam${rev} 🎉`);
+
+      // Meta CAPI: Purchase server-side en la aprobación (el evento que se optimiza
+      // en CPA). Best-effort: si falla, ya está logueado y NO rompe el postback.
+      await sendPurchaseEvent({
+        eventId: lead.id, // dedup key
+        value: revenue ?? 0,
+        currency: "USD",
+        email: lead.customerEmail,
+        phone: lead.customerPhone,
+        ip: lead.customerIp,
+        externalId: lead.id,
+        contentIds: lead.offer ? [lead.offer.networkOfferId] : undefined,
+      });
     }
 
     return NextResponse.json({ status: "updated", lead_id: lead.id, new_status: status });
