@@ -8,12 +8,12 @@ const { prismaMock } = vi.hoisted(() => ({
 vi.mock("@/lib/db", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/notify", () => ({ sendAlert: vi.fn().mockResolvedValue(undefined) }));
 
-import { GET } from "@/app/api/webhooks/ecomlatam/postback/route";
+import { GET } from "@/app/api/webhooks/latinecom/postback/route";
 
 const TOKEN = "test-postback-token";
 
 function makeReq(params: Record<string, string>): Request {
-  const u = new URL("http://localhost/api/webhooks/ecomlatam/postback");
+  const u = new URL("http://localhost/api/webhooks/latinecom/postback");
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
   return new Request(u, { method: "GET" });
 }
@@ -32,7 +32,7 @@ beforeEach(() => {
   prismaMock.lead.update.mockResolvedValue({ id: "lead-uuid-1" });
 });
 
-describe("GET /api/webhooks/ecomlatam/postback", () => {
+describe("GET /api/webhooks/latinecom/postback", () => {
   it("Sales: actualiza a lead con revenue del payout (USD)", async () => {
     const res = await GET(
       makeReq({ token: TOKEN, leadId: "EC-999", status: "sale", payout: "14.5" }),

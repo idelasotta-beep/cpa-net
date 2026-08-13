@@ -1,5 +1,5 @@
 /**
- * Respuesta del `POST /api/external/orders` de EcomLatam.
+ * Respuesta del `POST /api/external/orders` de Latinecom.
  *
  * GOTCHA: la API responde HTTP 200 incluso cuando el lead va a papelera
  * (duplicado del día, validación fallida). El éxito real trae `orderId`/`leadNumber`;

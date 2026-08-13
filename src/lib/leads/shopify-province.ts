@@ -1,5 +1,5 @@
 /**
- * Resolución de la provincia argentina al ID que exige EcomLatam (entero 1-24).
+ * Resolución de la provincia argentina al ID que exige Latinecom (entero 1-24).
  *
  * Fuente primaria: `shipping_address.province_code` de Shopify = código ISO 3166-2
  * (una letra), estandarizado y sin problemas de acentos/tipeo.
@@ -10,7 +10,7 @@
  * (no se pushea a la red con provincia inválida).
  */
 
-// Código ISO 3166-2:AR (letra) → ID de provincia de EcomLatam.
+// Código ISO 3166-2:AR (letra) → ID de provincia de Latinecom.
 const CODE_TO_ID: Record<string, number> = {
   A: 17, // Salta
   B: 1, // Buenos Aires (provincia)
@@ -38,7 +38,7 @@ const CODE_TO_ID: Record<string, number> = {
   Z: 20, // Santa Cruz
 };
 
-// Etiqueta normalizada (sin acentos, minúsculas) → ID de EcomLatam.
+// Etiqueta normalizada (sin acentos, minúsculas) → ID de Latinecom.
 // Cubre las variantes del dataset de Dropi, incluidas las 4 de Buenos Aires.
 const LABEL_TO_ID: Record<string, number> = {
   "ciudad autonoma de buenos aires": 2,
@@ -79,7 +79,7 @@ export function normalizeProvince(value: string): string {
 }
 
 /**
- * Devuelve el ID de provincia (1-24) de EcomLatam, o null si no se reconoce.
+ * Devuelve el ID de provincia (1-24) de Latinecom, o null si no se reconoce.
  * @param provinceCode  shipping_address.province_code (ISO, ej. "M")
  * @param provinceLabel  texto de la provincia (fallback), ej. "Gran Buenos Aires"
  */

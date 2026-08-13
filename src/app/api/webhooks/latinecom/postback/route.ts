@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { mapStatus } from "@/lib/networks/ecomlatam/client";
+import { mapStatus } from "@/lib/networks/latinecom/client";
 import { logger } from "@/lib/logger";
 import { sendPurchaseEvent } from "@/lib/meta/capi";
 import { sendAlert } from "@/lib/notify";
@@ -10,12 +10,12 @@ import { sendAlert } from "@/lib/notify";
 // crypto + DB → runtime Node.
 export const runtime = "nodejs";
 
-const log = logger.child({ route: "GET /api/webhooks/ecomlatam/postback" });
+const log = logger.child({ route: "GET /api/webhooks/latinecom/postback" });
 
 function tokenOk(received: string | null): boolean {
-  const expected = env.ECOMLATAM_POSTBACK_TOKEN;
+  const expected = env.LATINECOM_POSTBACK_TOKEN;
   if (!expected) {
-    log.warn("ECOMLATAM_POSTBACK_TOKEN no configurado: validación de token omitida");
+    log.warn("LATINECOM_POSTBACK_TOKEN no configurado: validación de token omitida");
     return true; // dev local
   }
   if (!received) return false;
@@ -25,7 +25,7 @@ function tokenOk(received: string | null): boolean {
 }
 
 /**
- * Postback de EcomLatam (push de estado). Es un GET con variables en la URL:
+ * Postback de Latinecom (push de estado). Es un GET con variables en la URL:
  *   ?token=<secreto>&leadId={leadId}&status={status}&payout={payout}&clickId={clickId}...
  * Reconcilia por networkLeadId ({leadId}) con fallback a clickId (= lead.id) y
  * actualiza el estado + revenue. Idempotente: si el estado no cambia, no hace nada.
@@ -41,7 +41,7 @@ export async function GET(req: Request): Promise<Response> {
       return NextResponse.json({ error: "invalid token" }, { status: 401 });
     }
 
-    const leadIdParam = q.get("leadId")?.trim() || null; // networkLeadId de EcomLatam
+    const leadIdParam = q.get("leadId")?.trim() || null; // networkLeadId de Latinecom
     const clickId = q.get("clickId")?.trim() || null; // = lead.id (reconciliación)
     const statusRaw = q.get("status")?.trim() || "";
     const payoutRaw = q.get("payout")?.trim() || "";
@@ -99,7 +99,7 @@ export async function GET(req: Request): Promise<Response> {
             oldStatus: lead.status,
             newStatus: status,
             source: "postback",
-            note: `EcomLatam postback status="${statusRaw}"${payoutRaw ? ` payout=${payoutRaw}` : ""}`.slice(0, 500),
+            note: `Latinecom postback status="${statusRaw}"${payoutRaw ? ` payout=${payoutRaw}` : ""}`.slice(0, 500),
           },
         },
       },
@@ -109,7 +109,7 @@ export async function GET(req: Request): Promise<Response> {
 
     if (status === "lead") {
       const rev = revenue ? ` (+$${revenue.toFixed(2)} USD)` : "";
-      await sendAlert("💰 Venta confirmada", `1 venta confirmada por EcomLatam${rev} 🎉`);
+      await sendAlert("💰 Venta confirmada", `1 venta confirmada por Latinecom${rev} 🎉`);
 
       // Meta CAPI: Purchase server-side en la aprobación (el evento que se optimiza
       // en CPA). Best-effort: si falla, ya está logueado y NO rompe el postback.
@@ -129,7 +129,7 @@ export async function GET(req: Request): Promise<Response> {
   } catch (err) {
     log.error(
       { err: err instanceof Error ? { message: err.message, stack: err.stack } : err },
-      "error inesperado procesando postback de EcomLatam",
+      "error inesperado procesando postback de Latinecom",
     );
     return NextResponse.json({ error: "internal error" }, { status: 500 });
   }

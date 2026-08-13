@@ -106,21 +106,21 @@ model Lead {
   customerRegion  String? @map("customer_region") // texto de la provincia/estado tal cual entra
   customerCountry String  @map("customer_country")
 
-  // Dirección estructurada para fulfillment COD (EcomLatam exige estos campos).
+  // Dirección estructurada para fulfillment COD (Latinecom exige estos campos).
   customerStreet         String? @map("customer_street") // calle SIN número
   customerStreetNumber   String? @map("customer_street_number") // número (o "S/N")
   customerPostalCode     String? @map("customer_postal_code")
-  customerProvinceId     Int?    @map("customer_province_id") // ID de provincia AR (1-24) para EcomLatam
+  customerProvinceId     Int?    @map("customer_province_id") // ID de provincia AR (1-24) para Latinecom
   customerFloor          String? @map("customer_floor")
   customerApartment      String? @map("customer_apartment")
   customerBetweenStreets String? @map("customer_between_streets")
   customerShippingNotes  String? @map("customer_shipping_notes")
 
-  // IP del comprador (capturada en la landing) — para EcomLatam y match del CAPI de Meta.
+  // IP del comprador (capturada en la landing) — para Latinecom y match del CAPI de Meta.
   customerIp String? @map("customer_ip")
 
   // Combo pedido: cantidad (1/2/3) y total local del combo (Shopify total_price).
-  // Se envían a EcomLatam como quantity + productPrice (cada combo tiene su precio).
+  // Se envían a Latinecom como quantity + productPrice (cada combo tiene su precio).
   quantity        Int?     @map("quantity")
   totalPriceLocal Decimal? @map("total_price_local") @db.Decimal(12, 2)
 

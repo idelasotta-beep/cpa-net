@@ -47,20 +47,20 @@ async function main() {
     },
   });
 
-  // Red CPA: EcomLatam / Latinecom (fulfillment COD Argentina, ingesta por Shopify).
+  // Red CPA: Latinecom / Latinecom (fulfillment COD Argentina, ingesta por Shopify).
   // pushEnabled queda en false por defecto (kill switch): activar desde /networks.
-  const ecomlatam = await prisma.network.upsert({
-    where: { slug: "ecomlatam" },
-    update: { name: "EcomLatam", active: true },
-    create: { slug: "ecomlatam", name: "EcomLatam", active: true },
+  const latinecom = await prisma.network.upsert({
+    where: { slug: "latinecom" },
+    update: { name: "Latinecom", active: true },
+    create: { slug: "latinecom", name: "Latinecom", active: true },
   });
 
-  // Oferta demo mapeada por SKU (= productSku que EcomLatam espera y que llega en
+  // Oferta demo mapeada por SKU (= productSku que Latinecom espera y que llega en
   // line_items[].sku del webhook de Shopify). Payout/precio son placeholders.
   await prisma.offer.upsert({
     where: {
       networkId_networkOfferId: {
-        networkId: ecomlatam.id,
+        networkId: latinecom.id,
         networkOfferId: "SKU-P90",
       },
     },
@@ -73,7 +73,7 @@ async function main() {
       active: true,
     },
     create: {
-      networkId: ecomlatam.id,
+      networkId: latinecom.id,
       networkOfferId: "SKU-P90",
       name: "Perfume Pherormen Hombre",
       country: "AR",
@@ -85,7 +85,7 @@ async function main() {
   });
 
   console.log(
-    "✅ Seed completado: networks 'adcombo' + 'ecomlatam' con ofertas demo (56579, SKU-P90).",
+    "✅ Seed completado: networks 'adcombo' + 'latinecom' con ofertas demo (56579, SKU-P90).",
   );
 }
 

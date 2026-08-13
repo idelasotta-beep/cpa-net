@@ -106,7 +106,7 @@ export async function POST(req: Request): Promise<Response> {
     if (mapped.customerProvinceId === null) {
       log.warn(
         { ...logCtx, region: mapped.customerRegion },
-        "provincia no resuelta a ID EcomLatam (revisar antes de pushear)",
+        "provincia no resuelta a ID Latinecom (revisar antes de pushear)",
       );
     }
 

@@ -61,7 +61,7 @@ function firstOf(...vals: Array<string | number | boolean | null | undefined>): 
   return null;
 }
 
-/** Solo dígitos (EcomLatam exige teléfono sin "+" ni espacios). */
+/** Solo dígitos (Latinecom exige teléfono sin "+" ni espacios). */
 function digitsOnly(v: string | null): string | null {
   if (v === null) return null;
   const d = v.replace(/\D/g, "");

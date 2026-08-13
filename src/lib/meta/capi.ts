@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 /**
  * Meta Conversions API (server-side).
  *
- * En el modelo CPA se cobra por LEAD APROBADO (postback Sales de EcomLatam), no por
+ * En el modelo CPA se cobra por LEAD APROBADO (postback Sales de Latinecom), no por
  * form-fill. Por eso el evento `Purchase` se dispara acá, desde el servidor, cuando
  * llega la aprobación — así Meta optimiza hacia leads que se convierten en plata.
  * Releasit dispara el evento de intención (Lead) en el navegador; este es el de abajo

@@ -1,6 +1,6 @@
 import type { Lead, Offer } from "@prisma/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { detectTrash, ecomlatamClient, mapStatus } from "@/lib/networks/ecomlatam/client";
+import { detectTrash, latinecomClient, mapStatus } from "@/lib/networks/latinecom/client";
 
 const lead = {
   id: "lead-uuid-123",
@@ -40,7 +40,7 @@ function mockFetch(payload: unknown, init: { ok?: boolean; status?: number } = {
 afterEach(() => vi.restoreAllMocks());
 
 describe("mapStatus (postback)", () => {
-  it("traduce los outcomes de EcomLatam al canónico", () => {
+  it("traduce los outcomes de Latinecom al canónico", () => {
     expect(mapStatus("sale")).toBe("lead");
     expect(mapStatus("Sales")).toBe("lead");
     expect(mapStatus("hold")).toBe("hold");
@@ -66,15 +66,15 @@ describe("detectTrash", () => {
   });
 });
 
-describe("ecomlatamClient.createOrder", () => {
+describe("latinecomClient.createOrder", () => {
   it("happy path: arma el body y devuelve networkLeadId", async () => {
     const fn = mockFetch({ orderId: 456789 });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res).toEqual({ ok: true, networkLeadId: "456789" });
 
     const [url, opts] = fn.mock.calls[0]! as [string, RequestInit];
     expect(url).toBe("https://latinecom.com/api/external/orders");
-    expect((opts.headers as Record<string, string>)["X-API-Key"]).toBe("test-ecomlatam-key");
+    expect((opts.headers as Record<string, string>)["X-API-Key"]).toBe("test-latinecom-key");
     const body = JSON.parse(opts.body as string);
     expect(body).toMatchObject({
       productSku: "SKU-P90",
@@ -93,14 +93,14 @@ describe("ecomlatamClient.createOrder", () => {
 
   it("acepta leadNumber como networkLeadId", async () => {
     mockFetch({ leadNumber: "SHOPIFY-tienda-1003" });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res).toEqual({ ok: true, networkLeadId: "SHOPIFY-tienda-1003" });
   });
 
   it("sin llamar a la API: falta provincia => terminalStatus trash", async () => {
     const fn = mockFetch({ orderId: 1 });
     const leadSinProvincia = { ...lead, customerProvinceId: null } as unknown as Lead;
-    const res = await ecomlatamClient.createOrder(leadSinProvincia, offer);
+    const res = await latinecomClient.createOrder(leadSinProvincia, offer);
     expect(res.ok).toBe(false);
     expect(res.terminalStatus).toBe("trash");
     expect(res.note).toContain("provinceId");
@@ -109,14 +109,14 @@ describe("ecomlatamClient.createOrder", () => {
 
   it("trash-en-200 (duplicado) => terminalStatus trash", async () => {
     mockFetch({ message: "Lead created but product item association failed" });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res.ok).toBe(false);
     expect(res.terminalStatus).toBe("trash");
   });
 
   it("2xx sin orderId ni marca de trash => error (reintenta)", async () => {
     mockFetch({ foo: "bar" });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res.ok).toBe(false);
     expect(res.terminalStatus).toBeUndefined();
     expect(res.error).toBeTruthy();
@@ -124,7 +124,7 @@ describe("ecomlatamClient.createOrder", () => {
 
   it("401 => error de API key (no terminal)", async () => {
     mockFetch({ error: "unauthorized" }, { ok: false, status: 401 });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res.ok).toBe(false);
     expect(res.terminalStatus).toBeUndefined();
     expect(res.error).toContain("API key");
@@ -132,14 +132,14 @@ describe("ecomlatamClient.createOrder", () => {
 
   it("5xx => error transitorio (reintenta)", async () => {
     mockFetch({ message: "server error" }, { ok: false, status: 502 });
-    const res = await ecomlatamClient.createOrder(lead, offer);
+    const res = await latinecomClient.createOrder(lead, offer);
     expect(res).toEqual({ ok: false, error: "server error" });
   });
 });
 
-describe("ecomlatamClient postback-only", () => {
-  it("fetchStatuses y loadOffers devuelven [] (EcomLatam empuja por postback)", async () => {
-    expect(await ecomlatamClient.fetchStatuses(["x"])).toEqual([]);
-    expect(await ecomlatamClient.loadOffers()).toEqual([]);
+describe("latinecomClient postback-only", () => {
+  it("fetchStatuses y loadOffers devuelven [] (Latinecom empuja por postback)", async () => {
+    expect(await latinecomClient.fetchStatuses(["x"])).toEqual([]);
+    expect(await latinecomClient.loadOffers()).toEqual([]);
   });
 });

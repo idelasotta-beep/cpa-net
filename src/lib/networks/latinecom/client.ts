@@ -8,13 +8,13 @@ import type {
   NormalizedOffer,
   OfferNetworkClient,
 } from "../types";
-import type { EcomlatamCreateResponse } from "./ecomlatam.types";
+import type { EcomlatamCreateResponse } from "./latinecom.types";
 
-const log = logger.child({ network: "ecomlatam" });
+const log = logger.child({ network: "latinecom" });
 
 /**
- * Traduce el status del POSTBACK de EcomLatam al canónico.
- * Outcomes de EcomLatam: Sales / Hold / Rejected / Trash.
+ * Traduce el status del POSTBACK de Latinecom al canónico.
+ * Outcomes de Latinecom: Sales / Hold / Rejected / Trash.
  * "unknown" => no tocar el estado local.
  */
 export function mapStatus(status: string): CanonicalStatus | "unknown" {
@@ -38,13 +38,13 @@ export function mapStatus(status: string): CanonicalStatus | "unknown" {
 }
 
 function requireApiKey(): string {
-  if (!env.ECOMLATAM_API_KEY) {
-    throw new Error("ECOMLATAM_API_KEY no está configurada");
+  if (!env.LATINECOM_API_KEY) {
+    throw new Error("LATINECOM_API_KEY no está configurada");
   }
-  return env.ECOMLATAM_API_KEY;
+  return env.LATINECOM_API_KEY;
 }
 
-/** Campos que EcomLatam exige sí o sí. Sin ellos el lead va a papelera → no gastamos el request. */
+/** Campos que Latinecom exige sí o sí. Sin ellos el lead va a papelera → no gastamos el request. */
 function missingRequiredFields(lead: Lead): string[] {
   const missing: string[] = [];
   if (!lead.customerName?.trim()) missing.push("name");
@@ -65,7 +65,7 @@ const nonEmpty = (v: unknown): boolean =>
 
 /**
  * Detecta si un 200 en realidad fue a papelera. Devuelve el motivo (string) o null.
- * Sondea las múltiples marcas que usa EcomLatam (ver EcomlatamCreateResponse).
+ * Sondea las múltiples marcas que usa Latinecom (ver EcomlatamCreateResponse).
  */
 export function detectTrash(d: EcomlatamCreateResponse): string | null {
   if (
@@ -109,14 +109,14 @@ function extractNetworkLeadId(d: EcomlatamCreateResponse): string | null {
   return id != null ? String(id) : null;
 }
 
-export const ecomlatamClient: OfferNetworkClient = {
-  slug: "ecomlatam",
+export const latinecomClient: OfferNetworkClient = {
+  slug: "latinecom",
 
   async createOrder(lead: Lead, offer: Offer): Promise<CreateOrderResult> {
     try {
       const apiKey = requireApiKey();
 
-      // Pre-validación: si falta un campo obligatorio, EcomLatam lo tira a trash.
+      // Pre-validación: si falta un campo obligatorio, Latinecom lo tira a trash.
       // Cortamos acá para no gastar el request y marcar el estado terminal directo.
       const missing = missingRequiredFields(lead);
       if (missing.length > 0) {
@@ -138,7 +138,7 @@ export const ecomlatamClient: OfferNetworkClient = {
         customerProvinceId: lead.customerProvinceId,
         // Combo: cada producto se vende en combos de 1/2/3 con precio propio.
         // quantity + productPrice (total del combo) deben ir juntos; el precio tiene
-        // que coincidir con el catálogo de EcomLatam (los precios de Shopify se
+        // que coincidir con el catálogo de Latinecom (los precios de Shopify se
         // configuran para matchear ese catálogo).
         quantity: lead.quantity ?? 1,
         // Reconciliación con el postback + reporting.
@@ -155,9 +155,9 @@ export const ecomlatamClient: OfferNetworkClient = {
       if (lead.customerApartment) body.customerApartment = lead.customerApartment;
       if (lead.customerBetweenStreets) body.customerBetweenStreets = lead.customerBetweenStreets;
       if (lead.customerShippingNotes) body.customerShippingNotes = lead.customerShippingNotes;
-      if (env.ECOMLATAM_PUBLISHER_ID) body.publisherId = env.ECOMLATAM_PUBLISHER_ID;
+      if (env.LATINECOM_PUBLISHER_ID) body.publisherId = env.LATINECOM_PUBLISHER_ID;
 
-      const url = `${env.ECOMLATAM_API_BASE_URL}/api/external/orders`;
+      const url = `${env.LATINECOM_API_BASE_URL}/api/external/orders`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
@@ -172,7 +172,7 @@ export const ecomlatamClient: OfferNetworkClient = {
 
       // API key inválida: no reintentar contra el mismo error (surface del problema).
       if (res.status === 401 || res.status === 403) {
-        return { ok: false, error: "EcomLatam rechazó la API key (401/403)" };
+        return { ok: false, error: "Latinecom rechazó la API key (401/403)" };
       }
 
       if (res.ok) {
@@ -199,12 +199,12 @@ export const ecomlatamClient: OfferNetworkClient = {
     }
   },
 
-  // EcomLatam empuja el estado por postback → no se pollea.
+  // Latinecom empuja el estado por postback → no se pollea.
   async fetchStatuses(): Promise<NetworkStatusResult[]> {
     return [];
   },
 
-  // EcomLatam no expone catálogo: las ofertas se cargan a mano en /networks.
+  // Latinecom no expone catálogo: las ofertas se cargan a mano en /networks.
   async loadOffers(): Promise<NormalizedOffer[]> {
     return [];
   },

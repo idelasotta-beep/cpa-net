@@ -1,5 +1,5 @@
 import { adcomboClient } from "./adcombo/client";
-import { ecomlatamClient } from "./ecomlatam/client";
+import { latinecomClient } from "./latinecom/client";
 import { latinleadsClient } from "./latinleads/client";
 import type { OfferNetworkClient } from "./types";
 
@@ -7,7 +7,7 @@ import type { OfferNetworkClient } from "./types";
 const clients: Record<string, OfferNetworkClient> = {
   adcombo: adcomboClient,
   latinleads: latinleadsClient,
-  ecomlatam: ecomlatamClient,
+  latinecom: latinecomClient,
 };
 
 export function getNetworkClient(slug: string): OfferNetworkClient | null {
