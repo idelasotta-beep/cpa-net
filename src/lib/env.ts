@@ -45,6 +45,13 @@ const envSchema = z.object({
   LATINLEADS_API_BASE_URL: z.string().url().default("https://igalfer.com"),
   LATINLEADS_PUBLISHER_ID: z.string().optional().default(""),
 
+  // ── EcomLatam / Latinecom (red CPA, fulfillment COD Argentina) ──
+  ECOMLATAM_API_KEY: z.string().optional().default(""),
+  ECOMLATAM_API_BASE_URL: z.string().url().default("https://latinecom.com"),
+  ECOMLATAM_PUBLISHER_ID: z.string().optional().default(""),
+  // Token secreto propio para validar los postbacks de EcomLatam (van sin HMAC).
+  ECOMLATAM_POSTBACK_TOKEN: z.string().optional().default(""),
+
   // Auth de los endpoints de jobs/admin (Bearer). Railway no lo inyecta solo.
   CRON_SECRET: z.string().optional().default(""),
 

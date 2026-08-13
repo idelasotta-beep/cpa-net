@@ -13,6 +13,7 @@ export default defineConfig({
       SHOPIFY_WEBHOOK_SECRET: "test-shopify-secret",
       ADCOMBO_API_KEY: "test-adcombo-key",
       LATINLEADS_API_KEY: "test-latinleads-key",
+      ECOMLATAM_API_KEY: "test-ecomlatam-key",
       CRON_SECRET: "test-cron-secret",
       SESSION_SECRET: "test-session-secret",
       LOG_LEVEL: "silent",
