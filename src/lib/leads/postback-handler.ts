@@ -38,6 +38,12 @@ export function mapPostbackStatus(status: string): CanonicalStatus | "unknown" {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** lead.id es UUID: evita que un clickId mal formado (ej. data de un test) rompa el findUnique. */
+function isUuid(s: string): boolean {
+  return UUID_RE.test(s);
+}
+
 export interface PostbackConfig {
   /** slug de la red (para el log de la ruta). */
   slug: string;
@@ -95,7 +101,7 @@ export async function handleNetworkPostback(
             include: { offer: true },
           })
         : null;
-    if (!lead && clickId) {
+    if (!lead && clickId && isUuid(clickId)) {
       lead = await prisma.lead.findUnique({
         where: { id: clickId },
         include: { offer: true },

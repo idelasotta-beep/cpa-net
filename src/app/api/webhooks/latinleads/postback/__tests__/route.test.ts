@@ -74,8 +74,18 @@ describe("GET /api/webhooks/latinleads/postback", () => {
   it("reconcilia por clickId (= lead.id) si no matchea el networkLeadId", async () => {
     prismaMock.lead.findFirst.mockResolvedValue(null);
     prismaMock.lead.findUnique.mockResolvedValue(leadShopify);
-    await GET(makeReq({ token: TOKEN, clickId: "lead-1", status: "hold" }));
+    await GET(makeReq({ token: TOKEN, clickId: "11111111-1111-1111-1111-111111111111", status: "hold" }));
     expect(prismaMock.lead.update.mock.calls[0]![0].data.status).toBe("hold");
+  });
+
+  it("clickId no-UUID (ej. data de un test) => lead_not_found, sin romper (no 500)", async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    const res = await GET(
+      makeReq({ token: TOKEN, leadId: "999", status: "hold", clickId: "TEST-1783536387465-585" }),
+    );
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({ reason: "lead_not_found" });
+    expect(prismaMock.lead.findUnique).not.toHaveBeenCalled();
   });
 
   it("CAPI se dispara en la aprobación para leads de Shopify (funnel Meta)", async () => {

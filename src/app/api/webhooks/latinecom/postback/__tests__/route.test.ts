@@ -84,13 +84,13 @@ describe("GET /api/webhooks/latinecom/postback", () => {
     prismaMock.lead.findFirst.mockResolvedValue(null);
     prismaMock.lead.findUnique.mockResolvedValue(leadSent);
     const res = await GET(
-      makeReq({ token: TOKEN, clickId: "lead-uuid-1", status: "rejected" }),
+      makeReq({ token: TOKEN, clickId: "11111111-1111-1111-1111-111111111111", status: "rejected" }),
     );
     expect(res.status).toBe(200);
     const arg = prismaMock.lead.update.mock.calls[0]![0];
     expect(arg.data.status).toBe("reject");
     expect(prismaMock.lead.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "lead-uuid-1" } }),
+      expect.objectContaining({ where: { id: "11111111-1111-1111-1111-111111111111" } }),
     );
   });
 });
