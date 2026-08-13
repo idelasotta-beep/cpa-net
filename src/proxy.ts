@@ -7,6 +7,7 @@ const SELF_AUTH_API = [
   "/api/jobs/",
   "/api/admin/",
   "/api/postback/",
+  "/api/webhooks/", // Shopify (HMAC) + postback Latinecom (token)
 ];
 
 export async function proxy(req: NextRequest): Promise<NextResponse> {
