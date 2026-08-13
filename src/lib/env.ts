@@ -44,6 +44,8 @@ const envSchema = z.object({
   LATINLEADS_API_KEY: z.string().optional().default(""),
   LATINLEADS_API_BASE_URL: z.string().url().default("https://igalfer.com"),
   LATINLEADS_PUBLISHER_ID: z.string().optional().default(""),
+  // Token secreto propio para validar los postbacks de Latinleads (van sin HMAC).
+  LATINLEADS_POSTBACK_TOKEN: z.string().optional().default(""),
 
   // ── Latinecom / Latinecom (red CPA, fulfillment COD Argentina) ──
   LATINECOM_API_KEY: z.string().optional().default(""),

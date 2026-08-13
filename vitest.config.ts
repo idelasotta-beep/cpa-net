@@ -15,6 +15,7 @@ export default defineConfig({
       LATINLEADS_API_KEY: "test-latinleads-key",
       LATINECOM_API_KEY: "test-latinecom-key",
       LATINECOM_POSTBACK_TOKEN: "test-postback-token",
+      LATINLEADS_POSTBACK_TOKEN: "test-latinleads-token",
       CRON_SECRET: "test-cron-secret",
       SESSION_SECRET: "test-session-secret",
       LOG_LEVEL: "silent",
