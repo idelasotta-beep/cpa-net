@@ -71,7 +71,7 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const raw = await req.text();
-    let body: { landingId?: unknown; unique?: unknown };
+    let body: { landingId?: unknown; unique?: unknown; step?: unknown };
     try {
       body = JSON.parse(raw);
     } catch {
@@ -80,14 +80,24 @@ export async function POST(req: Request): Promise<Response> {
 
     const landingId = typeof body.landingId === "string" ? body.landingId.trim().slice(0, 100) : "";
     if (!landingId) return new Response(null, { status: 204, headers });
+    // step: "view" (default) cuenta visita/únicos; "start" cuenta "form abierto".
+    const step = body.step === "start" ? "start" : "view";
     const unique = body.unique === true;
 
     const date = todayUtc();
-    await prisma.landingStat.upsert({
-      where: { landingId_date: { landingId, date } },
-      create: { landingId, date, views: 1, uniques: unique ? 1 : 0 },
-      update: { views: { increment: 1 }, ...(unique ? { uniques: { increment: 1 } } : {}) },
-    });
+    if (step === "start") {
+      await prisma.landingStat.upsert({
+        where: { landingId_date: { landingId, date } },
+        create: { landingId, date, starts: 1 },
+        update: { starts: { increment: 1 } },
+      });
+    } else {
+      await prisma.landingStat.upsert({
+        where: { landingId_date: { landingId, date } },
+        create: { landingId, date, views: 1, uniques: unique ? 1 : 0 },
+        update: { views: { increment: 1 }, ...(unique ? { uniques: { increment: 1 } } : {}) },
+      });
+    }
 
     return new Response(null, { status: 204, headers });
   } catch (err) {

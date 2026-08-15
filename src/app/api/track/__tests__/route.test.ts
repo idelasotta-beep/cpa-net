@@ -31,6 +31,16 @@ describe("POST /api/track", () => {
     expect(arg.update.uniques).toEqual({ increment: 1 });
   });
 
+  it("step=start: incrementa starts (form abierto), no views", async () => {
+    const res = await POST(makeReq({ landingId: "es-linterna-1", step: "start" }));
+    expect(res.status).toBe(204);
+    const arg = prismaMock.landingStat.upsert.mock.calls[0]![0];
+    expect(arg.create).toMatchObject({ starts: 1 });
+    expect(arg.create.views).toBeUndefined();
+    expect(arg.update.starts).toEqual({ increment: 1 });
+    expect(arg.update.views).toBeUndefined();
+  });
+
   it("view no-único: no incrementa uniques", async () => {
     await POST(makeReq({ landingId: "es-linterna-1", unique: false }));
     const arg = prismaMock.landingStat.upsert.mock.calls[0]![0];
