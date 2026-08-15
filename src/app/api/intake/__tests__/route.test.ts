@@ -93,6 +93,17 @@ describe("POST /api/intake", () => {
     expect(prismaMock.lead.create.mock.calls[0]![0].data.customerProvinceId).toBe(12);
   });
 
+  it("país sin catálogo (MX): provincia por texto, provinceId null, country del registry", async () => {
+    const { provinceId, country, ...rest } = validPayload;
+    void provinceId;
+    void country;
+    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", phone: "5215512345678" }));
+    const data = prismaMock.lead.create.mock.calls[0]![0].data;
+    expect(data.customerProvinceId).toBeNull();
+    expect(data.customerRegion).toBe("Jalisco");
+    expect(data.customerCountry).toBe("México");
+  });
+
   it("SKU sin oferta => lead con offerId null", async () => {
     prismaMock.offer.findFirst.mockResolvedValue(null);
     await POST(makeReq(validPayload));
