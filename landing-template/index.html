@@ -5,36 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oferta</title>
 <style>
-  /* Ultra-liviano: sin frameworks. Mobile-first. */
-  :root{--bg:#0f1115;--card:#fff;--ink:#111;--muted:#6b7280;--brand:#16a34a;--brand2:#15803d;--line:#e5e7eb;--err:#dc2626}
+  /* Ultra-liviano: sin frameworks. Mobile-first. Tema violeta (estilo Releasit). */
+  :root{
+    --brand:#7c3aed;--brand2:#6d28d9;--field:#f5f3ff;--line:#ddd6fe;
+    --ink:#1f2937;--muted:#6b7280;--req:#dc2626;--ok:#16a34a;--wa:#25D366
+  }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#f3f4f6;line-height:1.4}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#faf9ff;line-height:1.4}
   img{max-width:100%;height:auto;display:block}
   .wrap{max-width:520px;margin:0 auto;background:#fff}
   .hero img{width:100%}
   .pad{padding:16px}
-  h1{font-size:22px;margin:8px 0}
-  .price{font-size:26px;font-weight:800;color:var(--brand2)}
-  .combos{display:grid;gap:10px;margin:14px 0}
-  .combo{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
-  .combo.sel{border-color:var(--brand);background:#f0fdf4}
+  h2{font-size:22px;font-weight:800;text-align:center;margin:6px 0 14px}
+
+  /* Combos */
+  .combos{display:grid;gap:10px;margin:8px 0 6px}
+  .combo{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:12px;padding:13px;cursor:pointer;background:var(--field)}
+  .combo.sel{border-color:var(--brand);background:#f0ebff}
   .combo input{width:20px;height:20px;accent-color:var(--brand)}
   .combo .t{font-weight:700}
+  .combo .tag{font-size:11px;background:var(--brand);color:#fff;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
   .combo .p{margin-left:auto;font-weight:800;color:var(--brand2)}
-  .combo .tag{font-size:11px;background:var(--brand);color:#fff;padding:2px 6px;border-radius:6px;margin-left:6px}
-  form{display:grid;gap:12px;margin-top:8px}
-  label{font-size:13px;font-weight:600;display:block;margin-bottom:4px}
-  input,select,textarea{width:100%;font-size:16px;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fff}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+
+  /* Campos */
+  form{display:grid;gap:2px;margin-top:6px}
+  label{color:var(--brand);font-weight:700;font-size:14.5px;margin:14px 0 6px;display:block}
+  .req{color:var(--req)}
+  .opt{color:var(--muted);font-weight:500;font-size:12px}
+  .field{display:flex;align-items:center;gap:9px;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:0 13px;transition:border-color .15s}
+  .field:focus-within{border-color:var(--brand)}
+  .field .ic{flex:0 0 auto;display:flex;color:#374151}
+  .field .cc{font-weight:800;color:#111;font-size:16px}
+  .field input,.field select{border:none;background:transparent;padding:14px 0;flex:1;font-size:16px;outline:none;color:var(--ink);width:100%}
+  .field select{color:var(--brand);font-weight:600}
+  .field select:valid{color:var(--ink)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .hp{position:absolute;left:-9999px;top:-9999px;height:0;width:0;opacity:0}
-  .cta{font-size:19px;font-weight:800;color:#fff;background:var(--brand);border:none;border-radius:12px;padding:16px;cursor:pointer;width:100%}
+
+  .err{color:var(--req);font-size:13px;min-height:16px;margin-top:8px}
+  .cta{margin-top:14px;font-size:19px;font-weight:800;text-transform:uppercase;color:#fff;background:var(--brand);border:none;border-radius:14px;padding:17px;cursor:pointer;width:100%;box-shadow:0 6px 18px rgba(124,58,237,.35)}
+  .cta:active{transform:translateY(1px)}
   .cta:disabled{opacity:.6}
-  .err{color:var(--err);font-size:13px;min-height:16px}
-  .thanks{display:none;text-align:center;padding:40px 20px}
-  .thanks .big{font-size:48px}
-  .muted{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+  .muted{color:var(--muted);font-size:12px;text-align:center;margin-top:10px}
+
+  .thanks{display:none;text-align:center;padding:44px 20px}
+  .thanks .big{font-size:52px}
 </style>
 </head>
 <body>
@@ -43,55 +59,95 @@
   <div class="hero"><img id="heroImg" alt="" src="https://placehold.co/1040x600?text=Producto"></div>
 
   <div class="pad" id="checkout">
-    <h1 id="prodName">Producto</h1>
-    <div class="price" id="priceLbl"></div>
+    <h2 id="prodName">Producto</h2>
 
     <!-- Selector de combo (1/2/3) -->
     <div class="combos" id="combos"></div>
 
+    <h2 style="margin-top:18px">Ingresá tu Dirección de Envío</h2>
+
     <form id="f" novalidate>
-      <div><label for="name">Nombre y apellido</label><input id="name" name="name" autocomplete="name" required></div>
-      <div><label for="phone">Teléfono / WhatsApp</label><input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></div>
-      <div class="row">
-        <div><label for="street">Calle</label><input id="street" name="street" autocomplete="address-line1" required></div>
-        <div><label for="streetNumber">Número</label><input id="streetNumber" name="streetNumber" inputmode="numeric" required></div>
+      <div>
+        <label for="name">Nombre completo <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="user"></span>
+          <input id="name" name="name" autocomplete="name" placeholder="Juan Perez" required></div>
       </div>
-      <div class="row">
-        <div><label for="floor">Piso/Depto <span class="muted">(opcional)</span></label><input id="floor" name="floor"></div>
-        <div><label for="postalCode">Código postal</label><input id="postalCode" name="postalCode" required></div>
+
+      <div>
+        <label for="phone">Teléfono con Whatsapp <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="wa"></span><span class="cc">+54</span>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="9 11 5432 1234" required></div>
       </div>
-      <div><label for="city">Ciudad / Localidad</label><input id="city" name="city" autocomplete="address-level2" required></div>
-      <div><label for="provinceId">Provincia</label>
-        <select id="provinceId" name="provinceId" required>
-          <option value="">Elegí tu provincia…</option>
-          <option value="1">Buenos Aires</option><option value="2">CABA</option>
-          <option value="3">Catamarca</option><option value="4">Chaco</option>
-          <option value="5">Chubut</option><option value="6">Córdoba</option>
-          <option value="7">Corrientes</option><option value="8">Entre Ríos</option>
-          <option value="9">Formosa</option><option value="10">Jujuy</option>
-          <option value="11">La Pampa</option><option value="12">La Rioja</option>
-          <option value="13">Mendoza</option><option value="14">Misiones</option>
-          <option value="15">Neuquén</option><option value="16">Río Negro</option>
-          <option value="17">Salta</option><option value="18">San Juan</option>
-          <option value="19">San Luis</option><option value="20">Santa Cruz</option>
-          <option value="21">Santa Fe</option><option value="22">Santiago del Estero</option>
-          <option value="23">Tierra del Fuego</option><option value="24">Tucumán</option>
-        </select>
+
+      <div>
+        <label for="street">Calle <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="street" name="street" autocomplete="address-line1" placeholder="Av Corrientes" required></div>
       </div>
-      <div><label for="betweenStreets">Entre calles / referencia <span class="muted">(opcional)</span></label><input id="betweenStreets" name="betweenStreets"></div>
+
+      <div>
+        <label for="streetNumber">Número <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="streetNumber" name="streetNumber" inputmode="numeric" placeholder="5432 ó SN" required></div>
+      </div>
+
+      <div>
+        <label for="floor">Piso y Timbre <span class="opt">(opcional)</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="floor" name="floor" placeholder="Ej. P3 D5 T8"></div>
+      </div>
+
+      <div>
+        <label for="betweenStreets">Referencia del Domicilio <span class="opt">(opcional)</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="betweenStreets" name="betweenStreets" placeholder="Entre que calles, color de la casa"></div>
+      </div>
+
+      <div>
+        <label for="provinceId">Provincia <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <select id="provinceId" name="provinceId" required>
+            <option value="" selected disabled hidden>Seleccioná tu Provincia</option>
+            <option value="1">Buenos Aires</option><option value="2">CABA</option>
+            <option value="3">Catamarca</option><option value="4">Chaco</option>
+            <option value="5">Chubut</option><option value="6">Córdoba</option>
+            <option value="7">Corrientes</option><option value="8">Entre Ríos</option>
+            <option value="9">Formosa</option><option value="10">Jujuy</option>
+            <option value="11">La Pampa</option><option value="12">La Rioja</option>
+            <option value="13">Mendoza</option><option value="14">Misiones</option>
+            <option value="15">Neuquén</option><option value="16">Río Negro</option>
+            <option value="17">Salta</option><option value="18">San Juan</option>
+            <option value="19">San Luis</option><option value="20">Santa Cruz</option>
+            <option value="21">Santa Fe</option><option value="22">Santiago del Estero</option>
+            <option value="23">Tierra del Fuego</option><option value="24">Tucumán</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="city">Ciudad <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="city" name="city" autocomplete="address-level2" placeholder="Ingresá tu ciudad / localidad" required></div>
+      </div>
+
+      <div>
+        <label for="postalCode">Código Postal <span class="req">*</span></label>
+        <div class="field"><span class="ic" data-i="pin"></span>
+          <input id="postalCode" name="postalCode" placeholder="Ej. 4100" required></div>
+      </div>
 
       <!-- Honeypot anti-bot: oculto; un humano lo deja vacío -->
       <input class="hp" tabindex="-1" autocomplete="off" id="hp" name="hp">
 
       <div class="err" id="err"></div>
-      <button class="cta" id="submit" type="submit">Finalizar pedido (pago al recibir)</button>
-      <div class="muted">Pagás en efectivo cuando lo recibís. Envío a todo el país.</div>
+      <button class="cta" id="submit" type="submit">Completa tu compra</button>
+      <div class="muted">💵 Pagás en efectivo cuando lo recibís · 🚚 Envío a todo el país</div>
     </form>
   </div>
 
   <div class="thanks" id="thanks">
     <div class="big">✅</div>
-    <h1>¡Pedido confirmado!</h1>
+    <h2>¡Pedido confirmado!</h2>
     <p>Te vamos a llamar para coordinar la entrega. Pagás al recibir.</p>
   </div>
 </div>
@@ -102,15 +158,15 @@ var CONFIG = {
   intakeUrl: "https://cpa-net.teleservespa.com/api/intake",
   pixelId: "",                     // ID del pixel de Meta ("" = sin pixel)
   sku: "SKU-P90",
-  productName: "Linterna Táctica TY-908",
-  heroImage: "",                   // URL de la imagen del hero ("" = placeholder)
+  productName: "¡Elegí tu oferta!",
+  heroImage: "",                   // URL del hero ("" = placeholder)
   currency: "$",
   combos: [                        // qty + precio TOTAL del combo (debe matchear catálogo de la red)
     { qty: 1, price: 57982, label: "1 unidad" },
     { qty: 2, price: 98569, label: "2 unidades", tag: "MÁS VENDIDO" },
     { qty: 3, price: 115964, label: "3 unidades", tag: "MEJOR PRECIO" }
   ],
-  defaultCombo: 1                  // índice del combo preseleccionado
+  defaultCombo: 1
 };
 /* ============================================================================= */
 
@@ -118,7 +174,14 @@ var CONFIG = {
   "use strict";
   var $ = function(id){ return document.getElementById(id); };
 
-  // --- Config visual ---
+  // Íconos SVG inline (livianos).
+  var ICONS = {
+    user: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+    pin: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
+    wa: '<svg width="22" height="22" viewBox="0 0 32 32"><path fill="#25D366" d="M16 3C9 3 3.5 8.6 3.5 15.5c0 2.4.7 4.7 1.9 6.6L4 29l7.1-1.8c1.8 1 3.8 1.5 5.9 1.5h.1c6.9 0 12.4-5.6 12.4-12.5C29.5 8.6 23 3 16 3z"/><path fill="#fff" d="M12.4 9.7c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.3 1.4 3.5c.2.2 2.4 3.7 5.8 5.1 2.9 1.1 3.5.9 4.1.9.7-.1 2.1-.8 2.4-1.6.3-.8.3-1.5.2-1.6-.1-.1-.3-.2-.7-.4l-2.3-1.1c-.3-.1-.5-.2-.8.2l-1 1.3c-.2.2-.4.2-.7.1-.4-.2-1.6-.6-3-1.8-1.1-1-1.8-2.2-2-2.5-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1-2.6z"/></svg>'
+  };
+  [].forEach.call(document.querySelectorAll(".ic"), function(el){ el.innerHTML = ICONS[el.getAttribute("data-i")] || ICONS.pin; });
+
   if (CONFIG.heroImage) $("heroImg").src = CONFIG.heroImage;
   $("prodName").textContent = CONFIG.productName;
   var money = function(n){ return CONFIG.currency + Number(n).toLocaleString("es-AR"); };
@@ -138,13 +201,13 @@ var CONFIG = {
   var fbc = cookie("_fbc");
   if (!fbc && fbclid) fbc = "fb.1." + Date.now() + "." + fbclid;
 
-  // submitId estable por sesión (idempotencia + anti doble-envío)
   var submitId = (crypto.randomUUID ? crypto.randomUUID() :
     "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){var r=Math.random()*16|0;return (c=="x"?r:(r&0x3|0x8)).toString(16);}));
 
   // --- Selector de combo ---
   var selected = CONFIG.combos[CONFIG.defaultCombo] || CONFIG.combos[0];
-  var cont = $("combos");
+  var cont = $("combos"), btn = $("submit");
+  function ctaLabel(){ btn.textContent = "Completa tu compra - " + money(selected.price); }
   CONFIG.combos.forEach(function(c, i){
     var el = document.createElement("label");
     el.className = "combo" + (c === selected ? " sel" : "");
@@ -158,59 +221,48 @@ var CONFIG = {
   function selectCombo(i){
     selected = CONFIG.combos[i];
     [].forEach.call(cont.children, function(ch, idx){ ch.classList.toggle("sel", idx===i); ch.querySelector("input").checked = idx===i; });
-    $("priceLbl").textContent = money(selected.price);
+    ctaLabel();
   }
-  $("priceLbl").textContent = money(selected.price);
+  ctaLabel();
 
   // --- Submit ---
-  var form = $("f"), btn = $("submit"), errBox = $("err"), sending = false;
-
-  function fail(msg){ errBox.textContent = msg; btn.disabled = false; sending = false; }
+  var form = $("f"), errBox = $("err"), sending = false;
+  function fail(msg){ errBox.textContent = msg; btn.disabled = false; sending = false; ctaLabel(); }
 
   form.addEventListener("submit", async function(ev){
     ev.preventDefault();
     if (sending) return;
     errBox.textContent = "";
-
     var v = function(id){ return ($(id).value || "").trim(); };
-    // Validación mínima (rápida; el server valida en serio).
+
     if (!v("name") || v("name").length < 3) return fail("Ingresá tu nombre completo.");
     if ((v("phone").replace(/\D/g,"")).length < 8) return fail("Ingresá un teléfono válido.");
     if (!v("street") || !v("streetNumber")) return fail("Completá calle y número.");
+    if (!v("provinceId")) return fail("Elegí tu provincia.");
     if (!v("city")) return fail("Ingresá tu ciudad.");
     if (!v("postalCode")) return fail("Ingresá tu código postal.");
-    if (!v("provinceId")) return fail("Elegí tu provincia.");
 
     sending = true; btn.disabled = true; btn.textContent = "Enviando…";
 
     var payload = {
-      submitId: submitId,
-      sku: CONFIG.sku,
-      quantity: selected.qty,
-      totalPriceLocal: selected.price,
-      name: v("name"), phone: v("phone"),
+      submitId: submitId, sku: CONFIG.sku, quantity: selected.qty, totalPriceLocal: selected.price,
+      name: v("name"),
+      phone: "54" + v("phone").replace(/\D/g,""),   // prefijo +54
       street: v("street"), streetNumber: v("streetNumber"),
       floor: v("floor"), betweenStreets: v("betweenStreets"),
-      city: v("city"), postalCode: v("postalCode"),
-      provinceId: Number(v("provinceId")),
+      city: v("city"), postalCode: v("postalCode"), provinceId: Number(v("provinceId")),
       fbclid: fbclid, fbp: fbp, fbc: fbc,
-      utmSource: qs.get("utm_source") || undefined,
-      utmCampaign: qs.get("utm_campaign") || undefined,
-      utmContent: qs.get("utm_content") || undefined,
-      utmTerm: qs.get("utm_term") || undefined,
+      utmSource: qs.get("utm_source") || undefined, utmCampaign: qs.get("utm_campaign") || undefined,
+      utmContent: qs.get("utm_content") || undefined, utmTerm: qs.get("utm_term") || undefined,
       hp: v("hp")
     };
 
-    // Pixel: evento de intención (el server dispara Purchase en la aprobación).
     if (CONFIG.pixelId && window.fbq) {
       try { window.fbq("track", "Lead", { value: selected.price, currency: "ARS" }, { eventID: submitId }); } catch(e){}
     }
 
-    // Submit con 1 reintento ante fallo de red.
     async function post(){
-      var r = await fetch(CONFIG.intakeUrl, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-      });
+      var r = await fetch(CONFIG.intakeUrl, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     }
@@ -219,16 +271,9 @@ var CONFIG = {
       try { data = await post(); }
       catch(e){ await new Promise(function(r){setTimeout(r,1200);}); data = await post(); }
       if (data && data.ok) {
-        $("checkout").style.display = "none";
-        $("thanks").style.display = "block";
-        window.scrollTo(0,0);
-      } else {
-        fail("No pudimos procesar tu pedido. Revisá los datos e intentá de nuevo.");
-      }
-    } catch(e){
-      fail("Hubo un problema de conexión. Intentá de nuevo en unos segundos.");
-      btn.textContent = "Finalizar pedido (pago al recibir)";
-    }
+        $("checkout").style.display = "none"; $("thanks").style.display = "block"; window.scrollTo(0,0);
+      } else { fail("No pudimos procesar tu pedido. Revisá los datos e intentá de nuevo."); }
+    } catch(e){ fail("Hubo un problema de conexión. Intentá de nuevo en unos segundos."); }
   });
 })();
 </script>
