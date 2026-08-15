@@ -41,6 +41,9 @@ export interface PurchaseEventInput {
   ip?: string | null;
   externalId?: string | null;
   contentIds?: string[];
+  /** IDs de click de Meta (van SIN hashear). Mejoran mucho el match. */
+  fbp?: string | null;
+  fbc?: string | null;
   /** unix seconds; default ahora. Ventana de Meta: 7 días. */
   eventTime?: number;
 }
@@ -64,6 +67,9 @@ export async function sendPurchaseEvent(
   if (ph) userData.ph = [ph];
   if (input.externalId) userData.external_id = [sha256(input.externalId)];
   if (input.ip) userData.client_ip_address = input.ip;
+  // fbp/fbc NO se hashean (no son PII); son las llaves más fuertes de atribución.
+  if (input.fbp) userData.fbp = input.fbp;
+  if (input.fbc) userData.fbc = input.fbc;
 
   const event: Record<string, unknown> = {
     event_name: "Purchase",

@@ -18,6 +18,10 @@ const envSchema = z.object({
   // Opcional: si está vacío, la verificación se omite (solo para dev local).
   PLATFORM_WEBHOOK_SECRET: z.string().optional().default(""),
 
+  // ── Landing propia (form COD self-hosted → /api/intake) ──
+  // Orígenes permitidos para CORS (coma-separado). Vacío = refleja cualquier origen (dev).
+  LANDING_ALLOWED_ORIGINS: z.string().optional().default(""),
+
   // ── Ingesta Shopify (form COD de Releasit) ──
   // Secreto de firma del webhook de Shopify (header X-Shopify-Hmac-Sha256, base64).
   // Opcional: si está vacío, la verificación se omite (solo para dev local).

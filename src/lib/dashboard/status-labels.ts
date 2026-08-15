@@ -34,6 +34,7 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   estrategias: "EstrategiasIA",
   pancake: "Pancake",
   shopify: "Shopify",
+  landing: "Landing propia",
   manual: "Manual",
 };
 
@@ -41,6 +42,7 @@ export const CHANNEL_LABEL: Record<Channel, string> = {
   shopify: "Shopify",
   whatsapp: "WhatsApp",
   webcake: "Webcake",
+  landing: "Landing propia",
   manual: "Manual",
 };
 

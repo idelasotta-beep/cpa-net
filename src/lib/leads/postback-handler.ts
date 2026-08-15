@@ -152,10 +152,10 @@ export async function handleNetworkPostback(
       const rev = revenue ? ` (+$${revenue.toFixed(2)} USD)` : "";
       await sendAlert("💰 Venta confirmada", `1 venta confirmada por ${cfg.label}${rev} 🎉`);
 
-      // Meta CAPI: solo para leads del funnel de Meta ads (Shopify + Releasit). Para
-      // leads de otras plataformas NO disparamos, así no ensuciamos la optimización
-      // con conversiones que Meta nunca originó. Best-effort: si falla, no rompe nada.
-      if (lead.platform === "shopify") {
+      // Meta CAPI: solo para leads del funnel de Meta ads (Shopify+Releasit o landing
+      // propia). Para leads de otras plataformas NO disparamos, así no ensuciamos la
+      // optimización con conversiones que Meta nunca originó. Best-effort: no rompe nada.
+      if (lead.platform === "shopify" || lead.platform === "landing") {
         await sendPurchaseEvent({
           eventId: lead.id, // dedup key
           value: revenue ?? 0,
@@ -164,6 +164,9 @@ export async function handleNetworkPostback(
           phone: lead.customerPhone,
           ip: lead.customerIp,
           externalId: lead.id,
+          // fbp/fbc los captura la landing propia (Shopify/Releasit no los pasaba).
+          fbp: lead.fbp,
+          fbc: lead.fbc,
           contentIds: lead.offer ? [lead.offer.networkOfferId] : undefined,
         });
       }

@@ -15,6 +15,7 @@ enum Platform {
   estrategias
   pancake
   shopify // pedido creado en una tienda Shopify (form COD de Releasit)
+  landing // landing propia self-hosted (form COD propio, sin Shopify)
   manual // creado a mano desde el dashboard
 }
 
@@ -23,6 +24,7 @@ enum Channel {
   shopify
   whatsapp
   webcake
+  landing
   manual
 }
 
@@ -118,6 +120,11 @@ model Lead {
 
   // IP del comprador (capturada en la landing) — para Latinecom y match del CAPI de Meta.
   customerIp String? @map("customer_ip")
+
+  // IDs de click de Meta capturados en la landing propia (mejoran el match del CAPI).
+  fbp    String? @map("fbp") // cookie _fbp
+  fbc    String? @map("fbc") // cookie _fbc (derivada de fbclid)
+  fbclid String? @map("fbclid") // click id crudo de la URL
 
   // Combo pedido: cantidad (1/2/3) y total local del combo (Shopify total_price).
   // Se envían a Latinecom como quantity + productPrice (cada combo tiene su precio).
