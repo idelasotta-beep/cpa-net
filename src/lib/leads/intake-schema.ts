@@ -20,6 +20,13 @@ export const intakePayloadSchema = z.object({
   // Idempotencia: el form genera un UUID por submit y lo reusa en reintentos.
   submitId: optStr,
 
+  // País (ISO2). Determina prefijo/moneda/catálogo de provincias. Default AR.
+  countryCode: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v && v.length === 2 ? v.toUpperCase() : "AR")),
+
   // Producto / combo
   sku: z.string().trim().min(1),
   quantity: z.coerce.number().int().min(1).max(3).default(1),
@@ -39,9 +46,11 @@ export const intakePayloadSchema = z.object({
   shippingNotes: optStr,
   city: z.string().trim().min(1),
   postalCode: z.string().trim().min(1),
-  provinceId: z.coerce.number().int().min(1).max(24).optional(),
-  province: optStr, // fallback texto si no viene provinceId
-  country: z.string().trim().default("Argentina"),
+  // ID de provincia estructurado (catálogo de la red del país; ej. AR/Latinecom 1-24).
+  // Sin clamp fijo: cada país define su rango. Países por texto libre lo omiten.
+  provinceId: z.coerce.number().int().positive().optional(),
+  province: optStr, // provincia como texto (fallback o países sin catálogo)
+  country: optStr, // nombre para mostrar; si falta se deriva de countryCode
 
   // Tracking / Meta
   fbclid: optStr,

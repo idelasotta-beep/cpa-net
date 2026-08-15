@@ -1,7 +1,7 @@
 import { Channel, Platform } from "@prisma/client";
+import { getCountry, resolveProvinceId } from "@/lib/geo/countries";
 import type { IntakePayload } from "./intake-schema";
 import { PayloadMappingError } from "./map-payload";
-import { resolveProvinceId } from "./shopify-province";
 
 export interface MappedIntakeLead {
   externalId: string;
@@ -55,8 +55,11 @@ export function mapIntakePayload(
     throw new PayloadMappingError("teléfono sin dígitos", "missing_phone");
   }
 
-  // Provincia: preferimos el ID directo del form; si no, resolvemos el texto.
-  const provinceId = p.provinceId ?? resolveProvinceId(null, p.province ?? null);
+  const country = getCountry(p.countryCode);
+
+  // Provincia: preferimos el ID directo del form; si no, resolvemos el texto
+  // contra el catálogo del país (países por texto libre devuelven null).
+  const provinceId = p.provinceId ?? resolveProvinceId(country.iso2, null, p.province ?? null);
 
   const customerAddress = [p.street, p.streetNumber].filter(Boolean).join(" ") || null;
 
@@ -71,7 +74,7 @@ export function mapIntakePayload(
     customerAddress,
     customerCity: p.city,
     customerRegion: p.province ?? null,
-    customerCountry: p.country,
+    customerCountry: p.country ?? country.name,
     customerStreet: p.street,
     customerStreetNumber: p.streetNumber,
     customerPostalCode: p.postalCode,
