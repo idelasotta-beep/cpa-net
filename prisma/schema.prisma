@@ -126,6 +126,9 @@ model Lead {
   fbc    String? @map("fbc") // cookie _fbc (derivada de fbclid)
   fbclid String? @map("fbclid") // click id crudo de la URL
 
+  // Landing propia de origen (slug = proyecto CF Pages) — atribución para la analítica.
+  landingId String? @map("landing_id")
+
   // Combo pedido: cantidad (1/2/3) y total local del combo (Shopify total_price).
   // Se envían a Latinecom como quantity + productPrice (cada combo tiene su precio).
   quantity        Int?     @map("quantity")
@@ -155,7 +158,25 @@ model Lead {
   @@index([createdAt])
   @@index([offerId])
   @@index([customerCity])
+  @@index([landingId])
   @@map("leads")
+}
+
+/// Analítica de conversión de las landings propias: visitas (beacon) agregadas por
+/// landing y día. Los leads se cuentan desde `leads.landing_id`. Sin PII.
+model LandingStat {
+  id        String   @id @default(uuid()) @db.Uuid
+  landingId String   @map("landing_id")
+  date      DateTime @db.Date // día (UTC) del agregado
+  views     Int      @default(0) // page views totales
+  uniques   Int      @default(0) // visitantes únicos (1 por visitante/día, dedup en cliente)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([landingId, date])
+  @@index([landingId])
+  @@map("landing_stats")
 }
 
 model LeadStatusHistory {

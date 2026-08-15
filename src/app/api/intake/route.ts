@@ -155,6 +155,7 @@ export async function POST(req: Request): Promise<Response> {
           customerIp: mapped.customerIp,
           quantity: mapped.quantity,
           totalPriceLocal: mapped.totalPriceLocal,
+          landingId: mapped.landingId,
           fbp: mapped.fbp,
           fbc: mapped.fbc,
           fbclid: mapped.fbclid,

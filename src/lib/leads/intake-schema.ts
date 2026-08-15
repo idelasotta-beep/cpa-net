@@ -53,6 +53,7 @@ export const intakePayloadSchema = z.object({
   country: optStr, // nombre para mostrar; si falta se deriva de countryCode
 
   // Tracking / Meta
+  landingId: optStr, // landing propia de origen (atribución para la analítica)
   fbclid: optStr,
   fbp: optStr,
   fbc: optStr,
