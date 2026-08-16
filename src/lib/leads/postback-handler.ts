@@ -167,6 +167,8 @@ export async function handleNetworkPostback(
           // fbp/fbc los captura la landing propia (Shopify/Releasit no los pasaba).
           fbp: lead.fbp,
           fbc: lead.fbc,
+          // Pixel del lead → CAPI multi-pixel (1 pixel por país/oferta); cae al global si no hay.
+          pixelId: lead.pixelId,
           contentIds: lead.offer ? [lead.offer.networkOfferId] : undefined,
         });
       }

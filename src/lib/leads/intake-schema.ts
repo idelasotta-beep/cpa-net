@@ -54,6 +54,7 @@ export const intakePayloadSchema = z.object({
 
   // Tracking / Meta
   landingId: optStr, // landing propia de origen (atribución para la analítica)
+  pixelId: optStr, // pixel de Meta de la landing (CAPI multi-pixel)
   fbclid: optStr,
   fbp: optStr,
   fbc: optStr,

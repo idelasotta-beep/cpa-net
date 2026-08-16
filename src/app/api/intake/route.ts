@@ -136,6 +136,7 @@ export async function POST(req: Request): Promise<Response> {
           quantity: mapped.quantity,
           totalPriceLocal: mapped.totalPriceLocal,
           landingId: mapped.landingId,
+          pixelId: mapped.pixelId,
           fbp: mapped.fbp,
           fbc: mapped.fbc,
           fbclid: mapped.fbclid,

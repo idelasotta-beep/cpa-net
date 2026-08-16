@@ -27,6 +27,7 @@ export interface MappedIntakeLead {
   quantity: number | null;
   totalPriceLocal: number | null;
   landingId: string | null;
+  pixelId: string | null;
   fbp: string | null;
   fbc: string | null;
   fbclid: string | null;
@@ -88,6 +89,7 @@ export function mapIntakePayload(
     quantity: p.quantity,
     totalPriceLocal: p.totalPriceLocal ?? null,
     landingId: p.landingId ?? null,
+    pixelId: p.pixelId ?? null,
     fbp: p.fbp ?? null,
     fbc: p.fbc ?? null,
     fbclid: p.fbclid ?? null,

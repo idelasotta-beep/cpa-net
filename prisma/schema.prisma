@@ -129,6 +129,9 @@ model Lead {
   // Landing propia de origen (slug = proyecto CF Pages) — atribución para la analítica.
   landingId String? @map("landing_id")
 
+  // Pixel de Meta de la landing (para el CAPI multi-pixel: 1 pixel por país/oferta).
+  pixelId String? @map("pixel_id")
+
   // Combo pedido: cantidad (1/2/3) y total local del combo (Shopify total_price).
   // Se envían a Latinecom como quantity + productPrice (cada combo tiene su precio).
   quantity        Int?     @map("quantity")

@@ -9,13 +9,14 @@ const { mockEnv } = vi.hoisted(() => ({
     NODE_ENV: "test",
     META_PIXEL_ID: "PIXEL123",
     META_CAPI_ACCESS_TOKEN: "TOKEN-abc",
+    META_CAPI_TOKENS: "{}",
     META_CAPI_ACTION_SOURCE: "website",
     META_CAPI_TEST_EVENT_CODE: "",
   },
 }));
 vi.mock("@/lib/env", () => ({ env: mockEnv }));
 
-import { isCapiConfigured, sendPurchaseEvent } from "@/lib/meta/capi";
+import { isCapiConfigured, resolvePixelCreds, sendPurchaseEvent } from "@/lib/meta/capi";
 
 const sha256 = (v: string) => createHash("sha256").update(v).digest("hex");
 
@@ -32,6 +33,7 @@ function mockFetch(payload: unknown, init: { ok?: boolean; status?: number } = {
 beforeEach(() => {
   mockEnv.META_PIXEL_ID = "PIXEL123";
   mockEnv.META_CAPI_ACCESS_TOKEN = "TOKEN-abc";
+  mockEnv.META_CAPI_TOKENS = "{}";
   mockEnv.META_CAPI_ACTION_SOURCE = "website";
   mockEnv.META_CAPI_TEST_EVENT_CODE = "";
 });
@@ -103,5 +105,39 @@ describe("sendPurchaseEvent", () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("network down")) as unknown as typeof fetch;
     const res = await sendPurchaseEvent({ eventId: "lead-5", value: 10 });
     expect(res).toEqual({ ok: false, error: "network down" });
+  });
+});
+
+describe("multi-pixel (resolvePixelCreds + sendPurchaseEvent)", () => {
+  it("usa el token del pixel del lead desde META_CAPI_TOKENS", async () => {
+    mockEnv.META_CAPI_TOKENS = JSON.stringify({ PIXEL_MX: "TOKEN-mx", PIXEL_CO: "TOKEN-co" });
+    expect(resolvePixelCreds("PIXEL_MX")).toEqual({ pixelId: "PIXEL_MX", token: "TOKEN-mx" });
+
+    const fn = mockFetch({ events_received: 1 });
+    await sendPurchaseEvent({ eventId: "l", value: 10, pixelId: "PIXEL_CO" });
+    const [url] = fn.mock.calls[0]! as [string];
+    expect(url).toContain("/PIXEL_CO/events");
+    expect(url).toContain("access_token=TOKEN-co");
+  });
+
+  it("pixel del lead == pixel por defecto usa el token por defecto", () => {
+    expect(resolvePixelCreds("PIXEL123")).toEqual({ pixelId: "PIXEL123", token: "TOKEN-abc" });
+  });
+
+  it("sin pixel en el lead cae al pixel+token global", () => {
+    expect(resolvePixelCreds(null)).toEqual({ pixelId: "PIXEL123", token: "TOKEN-abc" });
+  });
+
+  it("pixel del lead sin token en ningún lado => no dispara", async () => {
+    const fn = mockFetch({});
+    const res = await sendPurchaseEvent({ eventId: "l", value: 10, pixelId: "PIXEL_DESCONOCIDO" });
+    expect(res).toEqual({ ok: false, error: "not_configured" });
+    expect(fn).not.toHaveBeenCalled();
+    expect(resolvePixelCreds("PIXEL_DESCONOCIDO")).toBeNull();
+  });
+
+  it("META_CAPI_TOKENS con JSON inválido no rompe (cae al global)", () => {
+    mockEnv.META_CAPI_TOKENS = "{no json";
+    expect(resolvePixelCreds(null)).toEqual({ pixelId: "PIXEL123", token: "TOKEN-abc" });
   });
 });

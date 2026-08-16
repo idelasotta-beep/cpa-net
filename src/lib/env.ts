@@ -62,8 +62,12 @@ const envSchema = z.object({
 
   // ── Meta Conversions API (Purchase server-side en la aprobación del lead) ──
   // Si falta pixel id o token, el evento se omite (no rompe el postback).
-  META_PIXEL_ID: z.string().optional().default(""),
-  META_CAPI_ACCESS_TOKEN: z.string().optional().default(""),
+  META_PIXEL_ID: z.string().optional().default(""), // pixel por defecto (fallback global)
+  META_CAPI_ACCESS_TOKEN: z.string().optional().default(""), // token del pixel por defecto
+  // Multi-pixel: mapa JSON pixelId→access token, ej. {"12463...":"EAAH...","98765...":"EAAB..."}.
+  // Permite un pixel por país/oferta; el CAPI usa el token del pixel del lead. El token
+  // vive SOLO acá (server-side), nunca en la landing pública.
+  META_CAPI_TOKENS: z.string().optional().default("{}"),
   META_CAPI_TEST_EVENT_CODE: z.string().optional().default(""), // para el Test Events de Meta
   META_CAPI_ACTION_SOURCE: z.string().optional().default("website"),
 

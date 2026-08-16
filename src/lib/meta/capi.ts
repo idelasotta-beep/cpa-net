@@ -44,19 +44,59 @@ export interface PurchaseEventInput {
   /** IDs de click de Meta (van SIN hashear). Mejoran mucho el match. */
   fbp?: string | null;
   fbc?: string | null;
+  /** Pixel del lead (de la landing). Resuelve a qué pixel+token va el evento. */
+  pixelId?: string | null;
   /** unix seconds; default ahora. Ventana de Meta: 7 días. */
   eventTime?: number;
 }
 
+/** Parsea el mapa JSON pixelId→token de env (tolerante a JSON inválido). */
+function pixelTokenMap(): Record<string, string> {
+  try {
+    const parsed = JSON.parse(env.META_CAPI_TOKENS || "{}");
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+  } catch {
+    log.warn("META_CAPI_TOKENS no es JSON válido: se ignora");
+    return {};
+  }
+}
+
+/**
+ * Resuelve el pixel + token a usar para un lead. Prioridad:
+ *  1. pixel del lead con token en el mapa multi-pixel
+ *  2. pixel del lead == pixel por defecto → token por defecto
+ *  3. sin pixel del lead → pixel + token por defecto (global)
+ * Devuelve null si no hay token disponible para ese pixel.
+ */
+export function resolvePixelCreds(pixelId?: string | null): { pixelId: string; token: string } | null {
+  const id = pixelId?.trim();
+  if (id) {
+    const token = pixelTokenMap()[id];
+    if (token) return { pixelId: id, token };
+    if (id === env.META_PIXEL_ID && env.META_CAPI_ACCESS_TOKEN) {
+      return { pixelId: id, token: env.META_CAPI_ACCESS_TOKEN };
+    }
+    return null; // pixel del lead sin token configurado
+  }
+  if (env.META_PIXEL_ID && env.META_CAPI_ACCESS_TOKEN) {
+    return { pixelId: env.META_PIXEL_ID, token: env.META_CAPI_ACCESS_TOKEN };
+  }
+  return null;
+}
+
 export function isCapiConfigured(): boolean {
-  return Boolean(env.META_PIXEL_ID && env.META_CAPI_ACCESS_TOKEN);
+  return Boolean(env.META_PIXEL_ID && env.META_CAPI_ACCESS_TOKEN) || Object.keys(pixelTokenMap()).length > 0;
 }
 
 export async function sendPurchaseEvent(
   input: PurchaseEventInput,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!isCapiConfigured()) {
-    log.warn("Meta CAPI no configurado (META_PIXEL_ID/META_CAPI_ACCESS_TOKEN): evento omitido");
+  const creds = resolvePixelCreds(input.pixelId);
+  if (!creds) {
+    log.warn(
+      { pixelId: input.pixelId },
+      "Meta CAPI sin token para el pixel del lead (META_CAPI_TOKENS / META_PIXEL_ID): evento omitido",
+    );
     return { ok: false, error: "not_configured" };
   }
 
@@ -90,7 +130,7 @@ export async function sendPurchaseEvent(
   if (env.META_CAPI_TEST_EVENT_CODE) body.test_event_code = env.META_CAPI_TEST_EVENT_CODE;
 
   try {
-    const url = `https://graph.facebook.com/${GRAPH_VERSION}/${env.META_PIXEL_ID}/events?access_token=${encodeURIComponent(env.META_CAPI_ACCESS_TOKEN)}`;
+    const url = `https://graph.facebook.com/${GRAPH_VERSION}/${creds.pixelId}/events?access_token=${encodeURIComponent(creds.token)}`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
