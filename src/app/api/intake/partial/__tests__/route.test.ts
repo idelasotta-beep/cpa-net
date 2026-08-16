@@ -40,6 +40,19 @@ describe("POST /api/intake/partial", () => {
     expect(arg.create.landingId).toBe("es-linterna-1");
   });
 
+  it("señal abandoned:true => setea abandonedAt (webhook rápido)", async () => {
+    await POST(makeReq({ ...base, abandoned: true }));
+    const arg = prismaMock.abandonedCart.upsert.mock.calls[0]![0];
+    expect(arg.create.abandonedAt).toBeInstanceOf(Date);
+    expect(arg.update.abandonedAt).toBeInstanceOf(Date);
+  });
+
+  it("sin señal => no setea abandonedAt", async () => {
+    await POST(makeReq(base));
+    const arg = prismaMock.abandonedCart.upsert.mock.calls[0]![0];
+    expect(arg.create.abandonedAt).toBeUndefined();
+  });
+
   it("teléfono inválido => no captura", async () => {
     await POST(makeReq({ ...base, phone: "123" }));
     expect(prismaMock.abandonedCart.upsert).not.toHaveBeenCalled();

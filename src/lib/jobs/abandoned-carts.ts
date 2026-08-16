@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 const log = logger.child({ job: "abandoned-carts" });
 const BATCH = 100;
 const MAX_ATTEMPTS = 5; // deja de reintentar una URL rota
+const ABANDON_BUFFER_MS = 60_000; // colchón tras la señal explícita (por si reabre y completa)
 
 export interface AbandonedWebhookResult {
   skipped?: string;
@@ -53,14 +54,18 @@ export async function runAbandonedCartWebhook(): Promise<AbandonedWebhookResult>
     return { skipped: "disabled", candidates: 0, sent: 0, failed: 0 };
   }
   const delayMs = Math.max(0, s.abandonedDelayMinutes ?? 20) * 60_000;
-  const cutoff = new Date(Date.now() - delayMs);
+  const graceCutoff = new Date(Date.now() - delayMs);
+  const abandonCutoff = new Date(Date.now() - ABANDON_BUFFER_MS);
 
   const carts = await prisma.abandonedCart.findMany({
     where: {
       recovered: false,
       webhookSentAt: null,
       webhookAttempts: { lt: MAX_ATTEMPTS },
-      createdAt: { lt: cutoff },
+      OR: [
+        { abandonedAt: { lt: abandonCutoff } }, // señal explícita (cerró popup / se fue): rápido
+        { createdAt: { lt: graceCutoff } }, // fallback por edad
+      ],
     },
     orderBy: { createdAt: "asc" },
     take: BATCH,

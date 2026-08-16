@@ -236,6 +236,7 @@ model AbandonedCart {
   payload         Json // datos parciales completos del form (para el webhook)
   recovered       Boolean   @default(false) // true cuando el lead se completó
   recoveredLeadId String?   @map("recovered_lead_id") @db.Uuid
+  abandonedAt     DateTime? @map("abandoned_at") // señal explícita (cerró popup / se fue) → webhook rápido
   webhookSentAt   DateTime? @map("webhook_sent_at")
   webhookAttempts Int       @default(0) @map("webhook_attempts")
   createdAt       DateTime  @default(now()) @map("created_at")

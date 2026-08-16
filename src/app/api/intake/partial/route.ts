@@ -71,25 +71,21 @@ export async function POST(req: Request): Promise<Response> {
 
     const payload = { ...body };
     delete payload.hp;
+    // Señal explícita de abandono (cerró popup / se fue) → marca abandonedAt para
+    // que el job dispare el webhook rápido (sin esperar toda la ventana de gracia).
+    const abandoned = body.abandoned === true ? { abandonedAt: new Date() } : {};
+    const fields = {
+      landingId: str(body.landingId, 100),
+      sku: str(body.sku, 100),
+      countryCode: country.iso2,
+      customerName: str(body.name),
+      customerPhone: phone,
+      payload: payload as Prisma.InputJsonValue,
+    };
     await prisma.abandonedCart.upsert({
       where: { submitId },
-      create: {
-        submitId,
-        landingId: str(body.landingId, 100),
-        sku: str(body.sku, 100),
-        countryCode: country.iso2,
-        customerName: str(body.name),
-        customerPhone: phone,
-        payload: payload as Prisma.InputJsonValue,
-      },
-      update: {
-        landingId: str(body.landingId, 100),
-        sku: str(body.sku, 100),
-        countryCode: country.iso2,
-        customerName: str(body.name),
-        customerPhone: phone,
-        payload: payload as Prisma.InputJsonValue,
-      },
+      create: { submitId, ...fields, ...abandoned },
+      update: { ...fields, ...abandoned },
     });
 
     return new Response(null, { status: 204, headers });
