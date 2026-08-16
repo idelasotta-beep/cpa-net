@@ -147,8 +147,8 @@ export default async function CarritosPage({
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        &quot;Reenviar&quot; reencola el carrito para que el cron vuelva a dispararlo al webhook
-        (requiere el webhook activo en Ajustes).
+        &quot;Reenviar&quot; dispara el webhook en el acto (requiere el webhook activo en Ajustes).
+        Si pasa a &quot;Enviado&quot;, salió bien.
       </p>
     </div>
   );

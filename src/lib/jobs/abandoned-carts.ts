@@ -89,3 +89,17 @@ export async function runAbandonedCartWebhook(): Promise<AbandonedWebhookResult>
   log.info({ candidates: carts.length, sent, failed }, "webhook de carritos abandonados");
   return { candidates: carts.length, sent, failed };
 }
+
+/** Envía UN carrito al webhook en el acto (para el botón "Reenviar" del dashboard). */
+export async function resendCart(id: string): Promise<{ sent: boolean; reason?: string }> {
+  const s = await prisma.appSettings.findUnique({ where: { id: "singleton" } });
+  if (!s || !s.abandonedWebhookEnabled || !s.abandonedWebhookUrl) return { sent: false, reason: "disabled" };
+  const cart = await prisma.abandonedCart.findUnique({ where: { id } });
+  if (!cart || cart.recovered) return { sent: false, reason: "not_found" };
+  const ok = await postWebhook(s.abandonedWebhookUrl, s.abandonedWebhookToken, cart);
+  await prisma.abandonedCart.update({
+    where: { id },
+    data: { webhookAttempts: { increment: 1 }, ...(ok ? { webhookSentAt: new Date() } : {}) },
+  });
+  return { sent: ok, reason: ok ? undefined : "post_failed" };
+}
