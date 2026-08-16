@@ -1,31 +1,11 @@
 import { prisma } from "@/lib/db";
-import { env } from "@/lib/env";
+import { corsHeaders } from "@/lib/http/landing-cors";
 import { logger } from "@/lib/logger";
 
 // DB → runtime Node.
 export const runtime = "nodejs";
 
 const log = logger.child({ route: "POST /api/track" });
-
-// ── CORS (el beacon viene de la landing en otro origen) ──
-function corsOrigin(req: Request): string {
-  const origin = req.headers.get("origin") ?? "";
-  const allowed = env.LANDING_ALLOWED_ORIGINS.split(",")
-    .map((o) => o.trim())
-    .filter(Boolean);
-  if (allowed.length === 0) return origin || "*";
-  return allowed.includes(origin) ? origin : allowed[0]!;
-}
-
-function corsHeaders(req: Request): Record<string, string> {
-  return {
-    "Access-Control-Allow-Origin": corsOrigin(req),
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Max-Age": "86400",
-    Vary: "Origin",
-  };
-}
 
 export function OPTIONS(req: Request): Response {
   return new Response(null, { status: 204, headers: corsHeaders(req) });
