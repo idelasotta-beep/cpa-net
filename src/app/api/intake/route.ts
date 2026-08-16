@@ -152,6 +152,16 @@ export async function POST(req: Request): Promise<Response> {
         select: { id: true },
       });
       log.info({ ...logCtx, leadId: lead.id }, "lead creado");
+      // Recuperación: si había un carrito abandonado con este submitId, marcarlo
+      // recuperado para que NO dispare el webhook.
+      try {
+        await prisma.abandonedCart.updateMany({
+          where: { submitId: externalId, recovered: false },
+          data: { recovered: true, recoveredLeadId: lead.id },
+        });
+      } catch {
+        /* best-effort */
+      }
       return json({ ok: true, lead_id: lead.id }, 200, req);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

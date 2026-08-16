@@ -210,9 +210,39 @@ model AppSettings {
   emailTo      String? @map("email_to")
   emailFrom    String? @map("email_from") // default onboarding@resend.dev
 
+  // Carritos abandonados: webhook a una URL propia (WhatsApp/n8n/Make) cuando un
+  // visitante deja el form empezado (teléfono válido) y no completa tras N minutos.
+  abandonedWebhookEnabled Boolean @default(false) @map("abandoned_webhook_enabled")
+  abandonedWebhookUrl     String? @map("abandoned_webhook_url")
+  abandonedWebhookToken   String? @map("abandoned_webhook_token") // opcional → header Authorization: Bearer
+  abandonedDelayMinutes   Int     @default(20) @map("abandoned_delay_minutes") // gracia antes de considerar abandonado
+
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("app_settings")
+}
+
+/// Carrito abandonado: form empezado (teléfono válido capturado en blur) sin completar.
+/// Separado de `leads` para NO pushearlo a la red. Se marca `recovered` si el lead se
+/// completa; si no, el job dispara el webhook configurable tras la ventana de gracia.
+model AbandonedCart {
+  id              String    @id @default(uuid()) @db.Uuid
+  submitId        String    @unique @map("submit_id") // idempotencia + link al lead final
+  landingId       String?   @map("landing_id")
+  sku             String?
+  countryCode     String?   @map("country_code")
+  customerName    String?   @map("customer_name")
+  customerPhone   String?   @map("customer_phone")
+  payload         Json // datos parciales completos del form (para el webhook)
+  recovered       Boolean   @default(false) // true cuando el lead se completó
+  recoveredLeadId String?   @map("recovered_lead_id") @db.Uuid
+  webhookSentAt   DateTime? @map("webhook_sent_at")
+  webhookAttempts Int       @default(0) @map("webhook_attempts")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([recovered, webhookSentAt, createdAt])
+  @@map("abandoned_carts")
 }
 
 model DailyCost {

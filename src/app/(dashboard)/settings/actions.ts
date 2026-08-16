@@ -65,6 +65,39 @@ export async function setNetworkPush(
   revalidatePath("/settings");
 }
 
+/** Configura el webhook de carritos abandonados (on/off + URL + token + delay min). */
+export async function setAbandonedWebhook(
+  enabled: boolean,
+  url: string,
+  token: string,
+  delayMinutes: number,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  const delay = Math.max(1, Math.min(1440, Math.floor(delayMinutes) || 20));
+
+  const update: Prisma.AppSettingsUpdateInput = {
+    abandonedWebhookEnabled: enabled,
+    abandonedWebhookUrl: url.trim() || null,
+    abandonedDelayMinutes: delay,
+  };
+  // El token solo se actualiza si viene no vacío (vacío = mantener el actual).
+  if (token.trim()) update.abandonedWebhookToken = token.trim();
+
+  await prisma.appSettings.upsert({
+    where: { id: "singleton" },
+    update,
+    create: {
+      id: "singleton",
+      abandonedWebhookEnabled: enabled,
+      abandonedWebhookUrl: url.trim() || null,
+      abandonedWebhookToken: token.trim() || null,
+      abandonedDelayMinutes: delay,
+    },
+  });
+  revalidatePath("/settings");
+}
+
 /** Configura el reporte diario por Telegram (on/off + hora 0-23 Santiago). */
 export async function setDailyReport(
   enabled: boolean,

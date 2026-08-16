@@ -1,3 +1,4 @@
+import { AbandonedWebhookSettings } from "@/components/abandoned-webhook-settings";
 import { DailyReportSettings } from "@/components/daily-report-settings";
 import { EmailSettings } from "@/components/email-settings";
 import { NetworkPushToggle } from "@/components/network-push-toggle";
@@ -134,6 +135,27 @@ export default async function SettingsPage() {
           <DailyReportSettings
             enabled={settings.dailyReportEnabled}
             hour={settings.dailyReportHour}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Carritos abandonados (webhook)</CardTitle>
+          <CardDescription>
+            Cuando alguien empieza el form (con teléfono válido) y no completa, tras la
+            ventana de gracia se envía el carrito por <strong>POST</strong> a tu URL
+            (WhatsApp/n8n/Make) para recuperarlo. Requiere el cron{" "}
+            <code className="mx-1">/api/jobs/abandoned-carts</code> agendado. Los que
+            completan el pedido <strong>no</strong> se envían.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AbandonedWebhookSettings
+            enabled={settings.abandonedWebhookEnabled}
+            url={settings.abandonedWebhookUrl ?? ""}
+            hasToken={Boolean(settings.abandonedWebhookToken)}
+            delayMinutes={settings.abandonedDelayMinutes}
           />
         </CardContent>
       </Card>
