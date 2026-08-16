@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCountry, isSupportedCountry, listCountries, resolveProvinceId } from "../countries";
+import { getCountry, isSupportedCountry, isValidPhone, listCountries, normalizePhone, resolveProvinceId } from "../countries";
 
 describe("getCountry", () => {
   it("devuelve la config de un país soportado", () => {
@@ -53,5 +53,36 @@ describe("resolveProvinceId (multi-país)", () => {
     expect(getCountry("MX").provinces).toBeUndefined();
     expect(resolveProvinceId("MX", null, "Jalisco")).toBeNull();
     expect(resolveProvinceId("CO", "X", "Antioquia")).toBeNull();
+  });
+});
+
+describe("validación de teléfono", () => {
+  it("AR: 10 nacionales válido con o sin código de país", () => {
+    expect(isValidPhone("AR", "1134422920")).toBe(true); // solo nacional
+    expect(isValidPhone("AR", "541134422920")).toBe(true); // con 54, sin 9
+    expect(isValidPhone("AR", "5491134422920")).toBe(true); // con 54 y 9
+  });
+
+  it("AR: rechaza corto, largo y todos iguales", () => {
+    expect(isValidPhone("AR", "541234")).toBe(false);
+    expect(isValidPhone("AR", "54113442292012345")).toBe(false);
+    expect(isValidPhone("AR", "5491111111111")).toBe(false);
+  });
+
+  it("normalizePhone AR agrega el 9 y es idempotente", () => {
+    expect(normalizePhone("AR", "541134422920")).toBe("5491134422920"); // agrega 9
+    expect(normalizePhone("AR", "5491134422920")).toBe("5491134422920"); // ya lo tiene
+    expect(normalizePhone("AR", "01134422920")).toBe("5491134422920"); // 0 troncal
+  });
+
+  it("MX: 10 nacionales, sin prefijo móvil", () => {
+    expect(isValidPhone("MX", "525512345678")).toBe(true);
+    expect(isValidPhone("MX", "5215512345678")).toBe(false); // 11 nacionales
+    expect(normalizePhone("MX", "525512345678")).toBe("525512345678");
+  });
+
+  it("CL: 9 nacionales", () => {
+    expect(isValidPhone("CL", "56912345678")).toBe(true);
+    expect(isValidPhone("CL", "5691234")).toBe(false);
   });
 });

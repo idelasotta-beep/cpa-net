@@ -1,5 +1,5 @@
 import { Channel, Platform } from "@prisma/client";
-import { getCountry, resolveProvinceId } from "@/lib/geo/countries";
+import { getCountry, isValidPhone, normalizePhone, resolveProvinceId } from "@/lib/geo/countries";
 import type { IntakePayload } from "./intake-schema";
 import { PayloadMappingError } from "./map-payload";
 
@@ -52,12 +52,18 @@ export function mapIntakePayload(
   externalId: string,
   ip: string | null,
 ): MappedIntakeLead {
-  const phone = digitsOnly(p.phone);
-  if (!phone) {
+  const digits = digitsOnly(p.phone);
+  if (!digits) {
     throw new PayloadMappingError("teléfono sin dígitos", "missing_phone");
   }
-
   const country = getCountry(p.countryCode);
+  // Validación por país (longitud nacional). Rechazamos inválidos: en CPA el teléfono
+  // es el dato crítico (la red descarta el lead si no se puede contactar).
+  if (!isValidPhone(country.iso2, digits)) {
+    throw new PayloadMappingError("teléfono inválido para el país", "invalid_phone");
+  }
+  // Forma canónica (AR: agrega el 9 de WhatsApp si falta).
+  const phone = normalizePhone(country.iso2, digits);
 
   // Provincia: preferimos el ID directo del form; si no, resolvemos el texto
   // contra el catálogo del país (países por texto libre devuelven null).

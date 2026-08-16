@@ -19,6 +19,16 @@ export interface Province {
   code?: string;
 }
 
+/** Regla de validación del número nacional (sin código de país). */
+export interface PhoneRule {
+  /** Mínimo de dígitos del número nacional. */
+  min: number;
+  /** Máximo de dígitos del número nacional. */
+  max: number;
+  /** Dígito(s) a insertar entre código de país y nacional para móviles (AR: "9" de WhatsApp). */
+  mobilePrefix?: string;
+}
+
 export interface CountryConfig {
   /** ISO 3166-1 alpha-2 (mayúsculas). */
   iso2: string;
@@ -26,6 +36,8 @@ export interface CountryConfig {
   name: string;
   /** Prefijo telefónico internacional sin "+" (ej. "54"). */
   phonePrefix: string;
+  /** Regla de validación del teléfono (longitud nacional + prefijo móvil). */
+  phone: PhoneRule;
   /** Mínimo de dígitos del número nacional (validación del form). */
   phoneMinDigits: number;
   /** Símbolo de moneda para el form (ej. "$", "S/"). */
@@ -85,23 +97,24 @@ const COUNTRIES: Record<string, CountryConfig> = {
     iso2: "AR",
     name: "Argentina",
     phonePrefix: "54",
+    phone: { min: 10, max: 10, mobilePrefix: "9" }, // móvil AR: 54 9 <área+número> para WhatsApp
     phoneMinDigits: 10,
     currencySymbol: "$",
     currencyCode: "ARS",
     provinces: AR_PROVINCES,
   },
-  MX: { iso2: "MX", name: "México", phonePrefix: "52", phoneMinDigits: 10, currencySymbol: "$", currencyCode: "MXN" },
-  CO: { iso2: "CO", name: "Colombia", phonePrefix: "57", phoneMinDigits: 10, currencySymbol: "$", currencyCode: "COP" },
-  CL: { iso2: "CL", name: "Chile", phonePrefix: "56", phoneMinDigits: 9, currencySymbol: "$", currencyCode: "CLP" },
-  PE: { iso2: "PE", name: "Perú", phonePrefix: "51", phoneMinDigits: 9, currencySymbol: "S/", currencyCode: "PEN" },
-  EC: { iso2: "EC", name: "Ecuador", phonePrefix: "593", phoneMinDigits: 9, currencySymbol: "$", currencyCode: "USD" },
-  BO: { iso2: "BO", name: "Bolivia", phonePrefix: "591", phoneMinDigits: 8, currencySymbol: "Bs", currencyCode: "BOB" },
-  PY: { iso2: "PY", name: "Paraguay", phonePrefix: "595", phoneMinDigits: 9, currencySymbol: "₲", currencyCode: "PYG" },
-  UY: { iso2: "UY", name: "Uruguay", phonePrefix: "598", phoneMinDigits: 8, currencySymbol: "$", currencyCode: "UYU" },
-  GT: { iso2: "GT", name: "Guatemala", phonePrefix: "502", phoneMinDigits: 8, currencySymbol: "Q", currencyCode: "GTQ" },
-  CR: { iso2: "CR", name: "Costa Rica", phonePrefix: "506", phoneMinDigits: 8, currencySymbol: "₡", currencyCode: "CRC" },
-  PA: { iso2: "PA", name: "Panamá", phonePrefix: "507", phoneMinDigits: 8, currencySymbol: "$", currencyCode: "USD" },
-  DO: { iso2: "DO", name: "República Dominicana", phonePrefix: "1", phoneMinDigits: 10, currencySymbol: "$", currencyCode: "DOP" },
+  MX: { iso2: "MX", name: "México", phonePrefix: "52", phone: { min: 10, max: 10 }, phoneMinDigits: 10, currencySymbol: "$", currencyCode: "MXN" },
+  CO: { iso2: "CO", name: "Colombia", phonePrefix: "57", phone: { min: 10, max: 10 }, phoneMinDigits: 10, currencySymbol: "$", currencyCode: "COP" },
+  CL: { iso2: "CL", name: "Chile", phonePrefix: "56", phone: { min: 9, max: 9 }, phoneMinDigits: 9, currencySymbol: "$", currencyCode: "CLP" },
+  PE: { iso2: "PE", name: "Perú", phonePrefix: "51", phone: { min: 9, max: 9 }, phoneMinDigits: 9, currencySymbol: "S/", currencyCode: "PEN" },
+  EC: { iso2: "EC", name: "Ecuador", phonePrefix: "593", phone: { min: 9, max: 10 }, phoneMinDigits: 9, currencySymbol: "$", currencyCode: "USD" },
+  BO: { iso2: "BO", name: "Bolivia", phonePrefix: "591", phone: { min: 8, max: 8 }, phoneMinDigits: 8, currencySymbol: "Bs", currencyCode: "BOB" },
+  PY: { iso2: "PY", name: "Paraguay", phonePrefix: "595", phone: { min: 9, max: 9 }, phoneMinDigits: 9, currencySymbol: "₲", currencyCode: "PYG" },
+  UY: { iso2: "UY", name: "Uruguay", phonePrefix: "598", phone: { min: 8, max: 9 }, phoneMinDigits: 8, currencySymbol: "$", currencyCode: "UYU" },
+  GT: { iso2: "GT", name: "Guatemala", phonePrefix: "502", phone: { min: 8, max: 8 }, phoneMinDigits: 8, currencySymbol: "Q", currencyCode: "GTQ" },
+  CR: { iso2: "CR", name: "Costa Rica", phonePrefix: "506", phone: { min: 8, max: 8 }, phoneMinDigits: 8, currencySymbol: "₡", currencyCode: "CRC" },
+  PA: { iso2: "PA", name: "Panamá", phonePrefix: "507", phone: { min: 8, max: 8 }, phoneMinDigits: 8, currencySymbol: "$", currencyCode: "USD" },
+  DO: { iso2: "DO", name: "República Dominicana", phonePrefix: "1", phone: { min: 10, max: 10 }, phoneMinDigits: 10, currencySymbol: "$", currencyCode: "DOP" },
 };
 
 const DEFAULT_COUNTRY = "AR";
@@ -178,4 +191,38 @@ export function resolveProvinceId(
     if (id != null) return id;
   }
   return null;
+}
+
+/**
+ * Número nacional (sin código de país ni 0 troncal ni prefijo móvil), a partir de
+ * los dígitos crudos del teléfono. Base para validar la longitud del país.
+ */
+function nationalPart(iso2: string | null | undefined, digits: string): string {
+  const c = getCountry(iso2);
+  let d = String(digits).replace(/\D/g, "");
+  if (c.phonePrefix && d.startsWith(c.phonePrefix)) d = d.slice(c.phonePrefix.length);
+  d = d.replace(/^0+/, ""); // 0 troncal
+  const mp = c.phone.mobilePrefix;
+  if (mp && d.startsWith(mp) && d.length === c.phone.max + mp.length) d = d.slice(mp.length);
+  return d;
+}
+
+/** ¿El teléfono es válido para el país? (longitud nacional + no todo el mismo dígito) */
+export function isValidPhone(iso2: string | null | undefined, digits: string): boolean {
+  const nat = nationalPart(iso2, digits);
+  if (!nat || /^(\d)\1+$/.test(nat)) return false; // vacío o todos iguales (0000…, 1111…)
+  const rule = getCountry(iso2).phone;
+  return nat.length >= rule.min && nat.length <= rule.max;
+}
+
+/**
+ * Forma canónica para almacenar/enviar: código de país + prefijo móvil (AR: "9" para
+ * WhatsApp) + número nacional. Idempotente si el número ya viene con el 9.
+ */
+export function normalizePhone(iso2: string | null | undefined, digits: string): string {
+  const c = getCountry(iso2);
+  let nat = nationalPart(iso2, digits);
+  const mp = c.phone.mobilePrefix;
+  if (mp && nat.length === c.phone.max) nat = mp + nat; // agrega el 9 (AR) para WhatsApp
+  return c.phonePrefix + nat;
 }

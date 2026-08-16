@@ -97,7 +97,7 @@ describe("POST /api/intake", () => {
     const { provinceId, country, ...rest } = validPayload;
     void provinceId;
     void country;
-    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", phone: "5215512345678" }));
+    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", phone: "525512345678" }));
     const data = prismaMock.lead.create.mock.calls[0]![0].data;
     expect(data.customerProvinceId).toBeNull();
     expect(data.customerRegion).toBe("Jalisco");
@@ -109,7 +109,7 @@ describe("POST /api/intake", () => {
     void street;
     void streetNumber;
     void country;
-    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", address: "Av Reforma 123, depto 4" }));
+    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", phone: "525512345678", address: "Av Reforma 123, depto 4" }));
     const data = prismaMock.lead.create.mock.calls[0]![0].data;
     expect(data.customerAddress).toBe("Av Reforma 123, depto 4");
     expect(data.customerStreet).toBeNull();
@@ -123,6 +123,24 @@ describe("POST /api/intake", () => {
     }));
     expect(res.status).toBe(200);
     expect(prismaMock.lead.create).toHaveBeenCalled();
+  });
+
+  it("AR sin el 9: se normaliza agregándolo (WhatsApp)", async () => {
+    await POST(makeReq({ ...validPayload, phone: "541134422920" })); // 54 + 10 nacionales, sin 9
+    expect(prismaMock.lead.create.mock.calls[0]![0].data.customerPhone).toBe("5491134422920");
+  });
+
+  it("teléfono inválido para el país (muy corto) => 400", async () => {
+    const res = await POST(makeReq({ ...validPayload, phone: "5491234" }));
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({ error: "invalid_phone" });
+    expect(prismaMock.lead.create).not.toHaveBeenCalled();
+  });
+
+  it("teléfono con todos los dígitos iguales => 400", async () => {
+    const res = await POST(makeReq({ ...validPayload, phone: "5491111111111" }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.lead.create).not.toHaveBeenCalled();
   });
 
   it("SKU sin oferta => lead con offerId null", async () => {
