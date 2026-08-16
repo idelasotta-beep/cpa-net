@@ -21,6 +21,7 @@ const LINKS = [
   { href: "/insights", label: "Insights" },
   { href: "/landings", label: "Landings" },
   { href: "/leads", label: "Leads" },
+  { href: "/carritos", label: "Carritos" },
   { href: "/costs", label: "Costos" },
   { href: "/networks", label: "Redes" },
   { href: "/settings", label: "Ajustes" },
