@@ -32,20 +32,24 @@ export const intakePayloadSchema = z.object({
   quantity: z.coerce.number().int().min(1).max(3).default(1),
   totalPriceLocal: z.coerce.number().positive().optional(),
 
-  // Cliente
+  // Cliente. Solo nombre y teléfono son obligatorios siempre; el resto lo decide
+  // el form por país/oferta (el intake se mantiene tolerante).
   name: z.string().trim().min(1),
   phone: z.string().trim().min(1),
   email: optStr,
 
-  // Dirección estructurada
-  street: z.string().trim().min(1),
-  streetNumber: z.string().trim().min(1),
+  // Dirección. Dos modos:
+  //  - AR/Latinecom: `street` + `streetNumber` (estructurado, lo exige el COD).
+  //  - Otros países/ofertas: `address` (una sola línea con calle y número).
+  street: optStr,
+  streetNumber: optStr,
+  address: optStr,
   floor: optStr,
   apartment: optStr,
   betweenStreets: optStr,
   shippingNotes: optStr,
-  city: z.string().trim().min(1),
-  postalCode: z.string().trim().min(1),
+  city: optStr,
+  postalCode: optStr,
   // ID de provincia estructurado (catálogo de la red del país; ej. AR/Latinecom 1-24).
   // Sin clamp fijo: cada país define su rango. Países por texto libre lo omiten.
   provinceId: z.coerce.number().int().positive().optional(),

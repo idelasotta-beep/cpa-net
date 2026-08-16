@@ -104,6 +104,27 @@ describe("POST /api/intake", () => {
     expect(data.customerCountry).toBe("México");
   });
 
+  it("dirección única (no-AR): `address` va a customerAddress, street queda null", async () => {
+    const { street, streetNumber, country, ...rest } = validPayload;
+    void street;
+    void streetNumber;
+    void country;
+    await POST(makeReq({ ...rest, countryCode: "MX", province: "Jalisco", address: "Av Reforma 123, depto 4" }));
+    const data = prismaMock.lead.create.mock.calls[0]![0].data;
+    expect(data.customerAddress).toBe("Av Reforma 123, depto 4");
+    expect(data.customerStreet).toBeNull();
+    expect(data.customerStreetNumber).toBeNull();
+  });
+
+  it("solo nombre y teléfono son obligatorios (resto opcional)", async () => {
+    const res = await POST(makeReq({
+      submitId: "33333333-3333-3333-3333-333333333333",
+      sku: "SKU-P90", name: "Solo Minimo", phone: "5491100000000",
+    }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.lead.create).toHaveBeenCalled();
+  });
+
   it("SKU sin oferta => lead con offerId null", async () => {
     prismaMock.offer.findFirst.mockResolvedValue(null);
     await POST(makeReq(validPayload));

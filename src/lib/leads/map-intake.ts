@@ -63,7 +63,9 @@ export function mapIntakePayload(
   // contra el catálogo del país (países por texto libre devuelven null).
   const provinceId = p.provinceId ?? resolveProvinceId(country.iso2, null, p.province ?? null);
 
-  const customerAddress = [p.street, p.streetNumber].filter(Boolean).join(" ") || null;
+  // Dirección: AR manda street+streetNumber (compuesta); el resto, `address` única.
+  const composed = [p.street, p.streetNumber].filter(Boolean).join(" ");
+  const customerAddress = composed || p.address || null;
 
   return {
     externalId,
@@ -74,12 +76,12 @@ export function mapIntakePayload(
     customerPhone: phone,
     customerEmail: p.email ?? null,
     customerAddress,
-    customerCity: p.city,
+    customerCity: p.city ?? null,
     customerRegion: p.province ?? null,
     customerCountry: p.country ?? country.name,
-    customerStreet: p.street,
-    customerStreetNumber: p.streetNumber,
-    customerPostalCode: p.postalCode,
+    customerStreet: p.street ?? null,
+    customerStreetNumber: p.streetNumber ?? null,
+    customerPostalCode: p.postalCode ?? null,
     customerProvinceId: provinceId,
     customerFloor: p.floor ?? null,
     customerApartment: p.apartment ?? null,
