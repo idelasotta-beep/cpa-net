@@ -185,6 +185,49 @@ export default async function SettingsPage() {
               Guardar
             </button>
           </form>
+
+          <details className="mt-4 text-sm">
+            <summary className="cursor-pointer text-muted-foreground">
+              ¿Cómo apunto mi subdominio a la app? (paso a paso)
+            </summary>
+            <div className="mt-3 space-y-3 rounded-lg border p-3 text-[13px] leading-relaxed">
+              <div>
+                <p className="font-medium text-foreground">1. Agregá el subdominio en Railway</p>
+                <p className="text-muted-foreground">
+                  Railway → servicio de esta app → <strong>Settings → Networking → Custom Domain</strong>.
+                  Ingresá el subdominio (ej. <code>go.tudominio.com</code>). Railway te da un destino{" "}
+                  <strong>CNAME</strong> (ej. <code>xxxx.up.railway.app</code>).
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">2. Creá el CNAME en Cloudflare</p>
+                <p className="text-muted-foreground">
+                  Cloudflare → tu dominio → <strong>DNS → Add record</strong>. Type <strong>CNAME</strong>,
+                  Name <code>go</code>, Target = el que te dio Railway.{" "}
+                  <strong>Proxy status: DNS only (nube gris)</strong> para que Railway emita el SSL sin
+                  conflictos.
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">3. Esperá el SSL</p>
+                <p className="text-muted-foreground">
+                  En unos minutos, cuando el DNS valida, Railway provisiona el certificado y el dominio
+                  pasa a <strong>Active</strong>.
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">4. Cargalo arriba</p>
+                <p className="text-muted-foreground">
+                  Pegá <code>https://go.tudominio.com</code> en “URL base” y Guardá. Las URLs de campaña
+                  (<code>/exp/&lt;slug&gt;</code>) pasan a salir con tu dominio.
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                🔒 SSL automático (Railway). El subdominio es solo para los links <code>/exp/…</code>: si
+                entrás a la raíz vas a ver el login, es normal.
+              </p>
+            </div>
+          </details>
         </CardContent>
       </Card>
     </div>
