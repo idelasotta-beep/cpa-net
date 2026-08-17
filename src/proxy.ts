@@ -10,6 +10,7 @@ const SELF_AUTH_API = [
   "/api/webhooks/", // Shopify (HMAC) + postback Latinecom (token)
   "/api/intake", // form COD de la landing propia (público, anti-fraude propio)
   "/api/track", // beacon de visitas de la landing propia (público, sin PII)
+  "/api/presence", // heartbeat de presencia en vivo (POST público; GET valida sesión)
 ];
 
 export async function proxy(req: NextRequest): Promise<NextResponse> {

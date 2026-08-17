@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LandingTrend } from "@/components/charts/landing-trend";
+import { LiveVisitors } from "@/components/live-visitors";
 import { PeriodSelector } from "@/components/period-selector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -72,6 +73,8 @@ export default async function LandingsPage({
         </div>
         <PeriodSelector current={period} />
       </div>
+
+      <LiveVisitors />
 
       {landingId ? (
         <p className="text-sm">
