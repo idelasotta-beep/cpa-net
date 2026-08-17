@@ -8,7 +8,7 @@
  * Sin DB → no genera carga de escritura por los heartbeats.
  */
 
-const WINDOW_MS = 60_000;
+const WINDOW_MS = 45_000; // ~2 heartbeats (cada 20s) + margen; baja rápido al irse
 const MAX_ENTRIES = 50_000;
 
 interface Entry {
