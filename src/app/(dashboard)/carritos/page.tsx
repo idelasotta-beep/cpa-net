@@ -91,12 +91,14 @@ export default async function CarritosPage({
             </p>
           ) : (
             <div className="overflow-x-auto rounded-lg border">
-              <Table className="min-w-[760px]">
+              <Table className="min-w-[960px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Teléfono</TableHead>
+                    <TableHead>Oferta</TableHead>
+                    <TableHead>Red</TableHead>
                     <TableHead>Landing</TableHead>
                     <TableHead>SKU</TableHead>
                     <TableHead>País</TableHead>
@@ -112,6 +114,8 @@ export default async function CarritosPage({
                       </TableCell>
                       <TableCell>{r.name ?? "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{r.phone ?? "—"}</TableCell>
+                      <TableCell>{r.offer ?? "—"}</TableCell>
+                      <TableCell>{r.network ?? "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{r.landingId ?? "—"}</TableCell>
                       <TableCell className="text-xs">{r.sku ?? "—"}</TableCell>
                       <TableCell>{r.countryCode ?? "—"}</TableCell>

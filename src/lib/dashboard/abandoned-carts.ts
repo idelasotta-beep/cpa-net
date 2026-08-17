@@ -9,6 +9,8 @@ export interface CartRow {
   phone: string | null;
   landingId: string | null;
   sku: string | null;
+  offer: string | null; // resuelto por SKU contra el catálogo de ofertas
+  network: string | null;
   countryCode: string | null;
   status: CartStatus;
 }
@@ -49,16 +51,36 @@ export async function getAbandonedCarts({
     },
   });
 
-  const all: CartRow[] = carts.map((c) => ({
-    id: c.id,
-    createdAt: c.createdAt,
-    name: c.customerName,
-    phone: c.customerPhone,
-    landingId: c.landingId,
-    sku: c.sku,
-    countryCode: c.countryCode,
-    status: statusOf(c),
-  }));
+  // Resolver oferta + red por SKU (como el intake), para mostrarlas en la lista.
+  const skus = [...new Set(carts.map((c) => c.sku).filter((s): s is string => Boolean(s)))];
+  const offers = skus.length
+    ? await prisma.offer.findMany({
+        where: { platformProductId: { in: skus }, active: true },
+        select: { platformProductId: true, name: true, network: { select: { name: true } } },
+      })
+    : [];
+  const offerBySku = new Map<string, { name: string; network: string }>();
+  for (const o of offers) {
+    if (o.platformProductId && !offerBySku.has(o.platformProductId)) {
+      offerBySku.set(o.platformProductId, { name: o.name, network: o.network.name });
+    }
+  }
+
+  const all: CartRow[] = carts.map((c) => {
+    const off = c.sku ? offerBySku.get(c.sku) : undefined;
+    return {
+      id: c.id,
+      createdAt: c.createdAt,
+      name: c.customerName,
+      phone: c.customerPhone,
+      landingId: c.landingId,
+      sku: c.sku,
+      offer: off?.name ?? null,
+      network: off?.network ?? null,
+      countryCode: c.countryCode,
+      status: statusOf(c),
+    };
+  });
 
   const counts = {
     total: all.length,
