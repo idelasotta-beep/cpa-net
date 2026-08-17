@@ -20,6 +20,7 @@ const LINKS = [
   { href: "/offers", label: "Ofertas" },
   { href: "/insights", label: "Insights" },
   { href: "/landings", label: "Landings" },
+  { href: "/experimentos", label: "Experimentos" },
   { href: "/leads", label: "Leads" },
   { href: "/carritos", label: "Carritos" },
   { href: "/costs", label: "Costos" },

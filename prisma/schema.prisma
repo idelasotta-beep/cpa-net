@@ -165,6 +165,36 @@ model Lead {
   @@map("leads")
 }
 
+/// Experimento A/B: reparte tráfico entre variantes (landings) por una URL de campaña
+/// (/exp/<slug>) y compara conversión/aprobación. El winner se mide por lead aprobado.
+model Experiment {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique // /exp/<slug> (la URL que va en el anuncio)
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  variants ExperimentVariant[]
+
+  @@map("experiments")
+}
+
+/// Variante de un experimento = una landing (landingId + URL) con un peso de reparto.
+model ExperimentVariant {
+  id           String     @id @default(uuid()) @db.Uuid
+  experimentId String     @map("experiment_id") @db.Uuid
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  name         String // "A", "B", ...
+  landingId    String     @map("landing_id") // para cruzar con la analítica de conversión
+  url          String // destino del redirect
+  weight       Int        @default(1) // peso del reparto
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@index([experimentId])
+  @@map("experiment_variants")
+}
+
 /// Analítica de conversión de las landings propias: visitas (beacon) agregadas por
 /// landing y día. Los leads se cuentan desde `leads.landing_id`. Sin PII.
 model LandingStat {
