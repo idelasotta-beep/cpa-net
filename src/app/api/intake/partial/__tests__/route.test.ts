@@ -18,7 +18,7 @@ function makeReq(body: unknown): Request {
 const base = {
   submitId: "44444444-4444-4444-4444-444444444444",
   countryCode: "AR",
-  phone: "1134422920", // AR nacional válido
+  phone: "5491134422920", // como lo manda el form (código + 9 de móvil)
   name: "Cliente Parcial",
   landingId: "es-linterna-1",
   sku: "SKU-P90",

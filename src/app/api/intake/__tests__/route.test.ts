@@ -125,9 +125,16 @@ describe("POST /api/intake", () => {
     expect(prismaMock.lead.create).toHaveBeenCalled();
   });
 
-  it("AR sin el 9: se normaliza agregándolo (WhatsApp)", async () => {
-    await POST(makeReq({ ...validPayload, phone: "541134422920" })); // 54 + 10 nacionales, sin 9
-    expect(prismaMock.lead.create.mock.calls[0]![0].data.customerPhone).toBe("5491134422920");
+  it("AR: un fijo válido (sin 9) se acepta y se guarda tal cual", async () => {
+    await POST(makeReq({ ...validPayload, phone: "541134422920" })); // fijo AR (sin 9)
+    expect(prismaMock.lead.create.mock.calls[0]![0].data.customerPhone).toBe("541134422920");
+  });
+
+  it("teléfono con longitud OK pero plan inválido => 400 (libphonenumber)", async () => {
+    const res = await POST(makeReq({ ...validPayload, phone: "5490000000000" }));
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({ error: "invalid_phone" });
+    expect(prismaMock.lead.create).not.toHaveBeenCalled();
   });
 
   it("teléfono inválido para el país (muy corto) => 400", async () => {

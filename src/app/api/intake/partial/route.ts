@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { getCountry, isValidPhone, normalizePhone } from "@/lib/geo/countries";
+import { getCountry } from "@/lib/geo/countries";
 import { corsHeaders } from "@/lib/http/landing-cors";
+import { checkPhone } from "@/lib/leads/phone-validation";
 import { logger } from "@/lib/logger";
 
 // DB → runtime Node.
@@ -61,13 +62,14 @@ export async function POST(req: Request): Promise<Response> {
     const submitId = str(body.submitId, 100);
     if (!submitId) return new Response(null, { status: 204, headers });
 
-    // Solo capturamos con teléfono válido para el país.
+    // Solo capturamos con teléfono válido para el país (libphonenumber).
     const country = getCountry(str(body.countryCode, 2));
     const rawPhone = typeof body.phone === "string" ? body.phone : "";
-    if (!rawPhone || !isValidPhone(country.iso2, rawPhone)) {
+    const phoneCheck = checkPhone(country.iso2, rawPhone);
+    if (!phoneCheck.valid || !phoneCheck.phone) {
       return new Response(null, { status: 204, headers });
     }
-    const phone = normalizePhone(country.iso2, rawPhone);
+    const phone = phoneCheck.phone;
 
     const payload = { ...body };
     delete payload.hp;
