@@ -1,6 +1,7 @@
 import { AbandonedWebhookSettings } from "@/components/abandoned-webhook-settings";
 import { DailyReportSettings } from "@/components/daily-report-settings";
 import { EmailSettings } from "@/components/email-settings";
+import { setCampaignBaseUrl } from "./actions";
 import { NetworkPushToggle } from "@/components/network-push-toggle";
 import { TestAlertButton } from "@/components/test-alert-button";
 import {
@@ -157,6 +158,33 @@ export default async function SettingsPage() {
             hasToken={Boolean(settings.abandonedWebhookToken)}
             delayMinutes={settings.abandonedDelayMinutes}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Dominio de campaña (A/B)</CardTitle>
+          <CardDescription>
+            Base de las URLs de campaña <code>/exp/&lt;slug&gt;</code> que van en tus anuncios.
+            Apuntá un subdominio propio (ej. <code>go.tudominio.com</code>) a esta app y cargalo
+            acá. Si lo dejás vacío, se usa el dominio de la app.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={setCampaignBaseUrl} className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[260px] flex-1">
+              <label className="mb-1 block text-xs text-muted-foreground">URL base</label>
+              <input
+                name="url"
+                defaultValue={settings.campaignBaseUrl ?? ""}
+                placeholder="https://go.tudominio.com"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              />
+            </div>
+            <button className="rounded-md bg-primary px-4 py-1.5 text-sm text-primary-foreground">
+              Guardar
+            </button>
+          </form>
         </CardContent>
       </Card>
     </div>

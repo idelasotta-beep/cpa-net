@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { type Period, periodRange } from "@/lib/dashboard/dates";
 import { getExperiments } from "@/lib/dashboard/experiments";
+import { getAppSettings } from "@/lib/dashboard/queries";
 import { PeriodSelector } from "@/components/period-selector";
 import { addVariant, createExperiment, deleteExperiment, deleteVariant } from "./actions";
 
@@ -30,12 +31,16 @@ export default async function ExperimentosPage({
   const sp = await searchParams;
   const period = (sp.period as Period) ?? "30d";
   const { from, to } = periodRange(period, sp.from, sp.to);
-  const experiments = await getExperiments(from, to);
+  const [experiments, settings] = await Promise.all([getExperiments(from, to), getAppSettings()]);
 
-  const h = await headers();
-  const host = h.get("host") ?? "cpa-net.teleservespa.com";
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  const base = `${proto}://${host}`;
+  // Dominio de campaña: el configurado en Ajustes, o el de la app por defecto.
+  let base = settings.campaignBaseUrl ?? "";
+  if (!base) {
+    const h = await headers();
+    const host = h.get("host") ?? "cpa-net.teleservespa.com";
+    const proto = h.get("x-forwarded-proto") ?? "https";
+    base = `${proto}://${host}`;
+  }
 
   return (
     <div className="space-y-6">

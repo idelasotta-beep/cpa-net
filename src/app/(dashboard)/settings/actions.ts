@@ -98,6 +98,29 @@ export async function setAbandonedWebhook(
   revalidatePath("/settings");
 }
 
+/** Dominio de campaña A/B (base de las URLs /exp/<slug>). Se normaliza a scheme+host. */
+export async function setCampaignBaseUrl(formData: FormData): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  const raw = String(formData.get("url") ?? "").trim();
+  let base: string | null = null;
+  if (raw) {
+    try {
+      const u = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+      base = `${u.protocol}//${u.host}`;
+    } catch {
+      base = null;
+    }
+  }
+  await prisma.appSettings.upsert({
+    where: { id: "singleton" },
+    update: { campaignBaseUrl: base },
+    create: { id: "singleton", campaignBaseUrl: base },
+  });
+  revalidatePath("/settings");
+  revalidatePath("/experimentos");
+}
+
 /** Configura el reporte diario por Telegram (on/off + hora 0-23 Santiago). */
 export async function setDailyReport(
   enabled: boolean,

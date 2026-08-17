@@ -247,6 +247,10 @@ model AppSettings {
   abandonedWebhookToken   String? @map("abandoned_webhook_token") // opcional → header Authorization: Bearer
   abandonedDelayMinutes   Int     @default(20) @map("abandoned_delay_minutes") // gracia antes de considerar abandonado
 
+  // Dominio propio para las URLs de campaña A/B (/exp/<slug>). Ej. https://go.midominio.com
+  // (apuntado a la app). Si está vacío, se usa el dominio de la app.
+  campaignBaseUrl String? @map("campaign_base_url")
+
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("app_settings")
