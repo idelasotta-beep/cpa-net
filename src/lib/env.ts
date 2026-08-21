@@ -30,6 +30,13 @@ const envSchema = z.object({
   // creadas por esa app (se descartan órdenes manuales/otras). Vacío = ingerir todas.
   SHOPIFY_RELEASIT_APP_ID: z.string().optional().default(""),
 
+  // ── Ingesta Pancake (leads de WhatsApp/Pancake → /api/webhooks/pancake) ──
+  // Secreto compartido para auth (header `Authorization: Bearer <secreto>` o `?token=`).
+  // Opcional: vacío = verificación omitida (solo dev local). Pancake gestiona su propio
+  // CAPI de Meta (Purchase al cerrar la venta por WhatsApp), así que la app NO dispara
+  // Purchase para estos leads (ver postback-handler: solo shopify/landing).
+  PANCAKE_WEBHOOK_SECRET: z.string().optional().default(""),
+
   // ── Adcombo (Fase 2) ──
   ADCOMBO_API_KEY: z.string().optional().default(""),
   ADCOMBO_API_BASE_URL: z
